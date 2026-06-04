@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="estilo.css">
+    <title>Advocacia Integrada - Histórico Geral</title>
+</head>
+<body>
+    <nav>
+        <a href="painel.html">🏠 Painel Geral</a>
+        <a href="clientes.html">👥 Clientes</a>
+        <a href="servicos.html">⚖️ Serviços/Honorários</a>
+        <a href="agendamentos.html">📅 Novo Agendamento</a>
+        <a href="consulta_agendamentos.html" style="border-bottom: 2px solid var(--gold-accent);">🔍 Histórico</a>
+        <a href="index.html" class="nav-login" style="color: #ea580c !important;">🚪 Sair</a>
+    </nav>
+
+    <header class="banner">
+        <h1>Histórico de Agendamentos e Atos</h1>
+        <p>Consulte alocações, prazos e os honorários gerais acordados</p>
+    </header>
+
+    <div class="container">
+        <div class="card">
+            <h2>Agendamentos Registrados (Mestre)</h2>
+            <table>
+                <thead>
+                    <tr><th>ID</th><th>Data/Hora</th><th>Cliente</th><th>Responsável</th><th>Total</th><th>Ação</th></tr>
+                </thead>
+                <tbody id="lista-mestre"></tbody>
+            </table>
+        </div>
+
+        <div class="card" id="card-detalhes" style="display: none;">
+            <h2>Detalhamento do Agendamento N° <span id="num-agendamento"></span></h2>
+            <table>
+                <thead>
+                    <tr><th>Ato / Serviço Vinculado</th><th>Tempo Alocado</th><th>Honorários Cobrados</th></tr>
+                </thead>
+                <tbody id="lista-servicos-detalhe"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        fetch('/listar-agendamentos').then(res => res.json()).then(dados => {
+            const corpo = document.getElementById('lista-mestre');
+            dados.forEach(a => {
+                corpo.innerHTML += `
+                    <tr>
+                        <td>${a.id}</td>
+                        <td>${a.data}</td>
+                        <td><strong>${a.nome_cliente}</strong></td>
+                        <td>${a.responsavel}</td>
+                        <td>R$ ${a.total.toFixed(2)}</td>
+                        <td><button onclick="verDetalhes(${a.id})">Ver Detalhes</button></td>
+                    </tr>`;
+            });
+        });
+
+        function verDetalhes(idAgendamento) {
+            fetch(`/detalhes-agendamento/${idAgendamento}`).then(res => res.json()).then(servicos => {
+                document.getElementById('card-detalhes').style.display = 'block';
+                document.getElementById('num-agendamento').innerText = idAgendamento;
+                
+                const corpoDetalhe = document.getElementById('lista-servicos-detalhe');
+                corpoDetalhe.innerHTML = "";
+                
+                servicos.forEach(item => {
+                    corpoDetalhe.innerHTML += `<tr><td><strong>${item.descricao}</strong></td><td>${item.tempo_estimado}h</td><td>R$ ${item.preco_cobrado.toFixed(2)}</td></tr>`;
+                });
+                
+                window.scrollTo({ top: document.getElementById('card-detalhes').offsetTop - 20, behavior: 'smooth' });
+            });
+        }
+    </script>
+    <footer class="rodape"><p>&copy; 2026 Advocacia Integrada - Privado</p></footer>
+</body>
+</html>
