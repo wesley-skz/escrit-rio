@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="estilo.css">
+    <title>Advocacia Integrada - Fórum / Ouvidoria</title>
+</head>
+<body>
+    <nav>
+        <a href="index.html">Início</a>
+        <a href="sobrenos.html">Sobre Nós</a>
+        <a href="atuacao.html">Áreas de Atuação</a>
+        <a href="contato.html">Contato</a>
+        <a href="sugestoes.html">Fórum</a>
+        <a href="login.html" class="nav-login">👤</a>
+    </nav>
+
+    <header class="banner">
+        <h1>Ouvidoria e Fórum</h1>
+        <p>Espaço Aberto para Críticas, Sugestões e Feedbacks de Clientes</p>
+    </header>
+
+    <div class="container">
+        <div class="card">
+            <h2>Enviar Novo Feedback</h2>
+            <form action="/salvar-sugestao" method="POST">
+                <label for="nome">Seu Nome / Razão Social:</label>
+                <input type="text" id="nome" name="nome" placeholder="Ex: Carlos Alberto" required>
+
+                <label for="tipo">Natureza da Mensagem:</label>
+                <select id="tipo" name="tipo">
+                    <option value="Sugestão">Elogio ou Sugestão</option>
+                    <option value="Crítica">Reclamação ou Crítica</option>
+                    <option value="Dúvida">Dúvida Processual</option>
+                </select>
+
+                <label for="mensagem">Mensagem / Relato:</label>
+                <textarea id="mensagem" name="mensagem" rows="5" placeholder="Descreva aqui o seu caso..." required></textarea>
+
+                <div style="margin-top: 15px;">
+                    <input type="submit" value="Publicar Relato">
+                </div>
+            </form>
+        </div>
+
+        <div class="card">
+            <h2>Manifestações Registradas</h2>
+            <table>
+                <thead>
+                    <tr><th>Autor</th><th>Tipo</th><th>Mensagem</th></tr>
+                </thead>
+                <tbody id="mural-feedbacks"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        fetch('/listar-sugestoes')
+            .then(res => res.json())
+            .then(dados => {
+                const mural = document.getElementById('mural-feedbacks');
+                dados.forEach(item => {
+                    mural.innerHTML += `
+                        <tr>
+                            <td><strong>${item.nome}</strong></td>
+                            <td><span style="color: var(--gold-accent); font-weight: 600;">${item.tipo}</span></td>
+                            <td>${item.mensagem}</td>
+                        </tr>`;
+                });
+            });
+    </script>
+    <footer class="rodape"><p>&copy; 2026 Advocacia Integrada</p></footer>
+</body>
+</html>
