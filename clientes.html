@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="estilo.css">
+    <title>Advocacia Integrada - Gestão de Clientes</title>
+</head>
+<body>
+    <nav>
+        <a href="painel.html">🏠 Painel Geral</a>
+        <a href="clientes.html" style="border-bottom: 2px solid var(--gold-accent);">👥 Clientes</a>
+        <a href="servicos.html">⚖️ Serviços/Honorários</a>
+        <a href="agendamentos.html">📅 Novo Agendamento</a>
+        <a href="consulta_agendamentos.html">🔍 Histórico</a>
+        <a href="index.html" class="nav-login" style="color: #ea580c !important;">🚪 Sair</a>
+    </nav>
+
+    <header class="banner">
+        <h1>Fichas de Clientes</h1>
+        <p>Cadastre e gerencie os dados corporativos e individuais</p>
+    </header>
+
+    <div class="container">
+        <div class="card">
+            <h2>Novo Cadastro de Cliente</h2>
+            <form action="/salvar-cliente" method="POST">
+                <label for="nome">Nome / Razão Social:</label>
+                <input type="text" id="nome" name="nome" placeholder="Ex: João da Silva" required>
+                
+                <label for="cpf">CPF / CNPJ:</label>
+                <input type="text" id="cpf" name="cpf" placeholder="000.000.000-00" required>
+                
+                <label for="telefone">Telefone / WhatsApp:</label>
+                <input type="tel" id="telefone" name="telefone" placeholder="(11) 99999-9999" required>
+                
+                <div style="margin-top: 15px;">
+                    <button type="submit">Salvar Ficha do Cliente</button>
+                </div>
+            </form>
+        </div>
+
+        <div class="card">
+            <h2>Clientes Cadastrados</h2>
+            <table>
+                <thead>
+                    <tr><th>Nome/Razão Social</th><th>CPF/CNPJ</th><th>Telefone</th></tr>
+                </thead>
+                <tbody id="lista-clientes"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        fetch('/listar-clientes')
+            .then(res => res.json())
+            .then(clientes => {
+                const corpoTabela = document.getElementById('lista-clientes');
+                clientes.forEach(c => {
+                    corpoTabela.innerHTML += `<tr><td><strong>${c.nome}</strong></td><td>${c.cpf}</td><td>${c.telefone}</td></tr>`;
+                });
+            });
+    </script>
+    <footer class="rodape"><p>&copy; 2026 Advocacia Integrada - Privado</p></footer>
+</body>
+</html>
