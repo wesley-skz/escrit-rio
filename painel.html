@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="estilo.css">
+    <title>Advocacia Integrada - Central</title>
+    <style>
+        .grid-atalhos { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; margin-top: 25px; }
+        .bloco-atalho { background: #fcfbf9; border: 1px solid #E5E7EB; border-radius: 6px; padding: 25px; text-align: center; text-decoration: none; color: var(--text-dark); border-bottom: 3px solid var(--gold-accent); transition: all 0.3s; }
+        .bloco-atalho:hover { transform: translateY(-3px); background: #fff; box-shadow: 0 6px 18px rgba(0,0,0,0.08); }
+        .bloco-atalho span { font-size: 2.3rem; display: block; margin-bottom: 12px; }
+        .bloco-atalho h4 { margin: 0 0 5px 0; color: var(--primary-dark); }
+        .bloco-atalho p { margin: 0; font-size: 0.8rem; color: var(--text-muted); }
+    </style>
+</head>
+<body>
+    <nav>
+        <a href="painel.html" style="border-bottom: 2px solid var(--gold-accent);">🏠 Painel Geral</a>
+        <a href="clientes.html">👥 Clientes</a>
+        <a href="servicos.html">⚖️ Serviços/Honorários</a>
+        <a href="agendamentos.html">📅 Novo Agendamento</a>
+        <a href="consulta_agendamentos.html">🔍 Histórico</a>
+        <a href="index.html" class="nav-login" style="color: #ea580c !important;" title="Deslogar">🚪 Sair</a>
+    </nav>
+
+    <header class="banner">
+        <h1>Painel Administrativo</h1>
+        <p>Ambiente de Controle Interno e Gestão de Demandas</p>
+    </header>
+
+    <div class="container">
+        <div class="card">
+            <h2>Bem-vindo à Central Corporativa</h2>
+            <p>Este é o seu ambiente operacional protegido. Utilize os blocos abaixo para triagem rápida ou navegue através do menu superior.</p>
+        </div>
+
+        <div class="grid-atalhos">
+            <a href="clientes.html" class="bloco-atalho"><span>👥</span><h4>Gestão de Clientes</h4><p>Cadastros e fichas de contatos.</p></a>
+            <a href="agendamentos.html" class="bloco-atalho"><span>📅</span><h4>Novo Agendamento</h4><p>Alocar advogados e fixar prazos.</p></a>
+            <a href="consulta_agendamentos.html" class="bloco-atalho"><span>🔍</span><h4>Histórico Geral</h4><p>Consultar andamentos salvos.</p></a>
+        </div>
+    </div>
+    <footer class="rodape"><p>&copy; 2026 Advocacia Integrada - Módulo Privado</p></footer>
+</body>
+</html>
