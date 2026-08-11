@@ -3,8 +3,73 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="estilo.css?v=3">
+    <link rel="stylesheet" href="estilo.css?v=4">
     <title>Advocacia Integrada - Contato</title>
+    <style>
+        .canais-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 14px;
+            margin-top: 8px;
+        }
+        @media (min-width: 640px) {
+            .canais-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+        .canal-item {
+            background: #fcfbf9;
+            border: 1px solid #E5E7EB;
+            border-radius: 6px;
+            padding: 20px 16px;
+            text-align: center;
+            border-bottom: 3px solid var(--gold-accent);
+        }
+        .canal-item .icone {
+            font-size: 1.6rem;
+            display: block;
+            margin-bottom: 10px;
+        }
+        .canal-item strong {
+            display: block;
+            color: var(--primary-dark);
+            font-size: 0.9rem;
+            margin-bottom: 6px;
+        }
+        .canal-item span {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            line-height: 1.4;
+            word-break: break-word;
+        }
+        .form-linha {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 0 16px;
+        }
+        @media (min-width: 640px) {
+            .form-linha {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+        .form-intro {
+            text-align: center;
+            color: var(--text-muted);
+            margin: -6px auto 22px auto;
+            max-width: 520px;
+            line-height: 1.5;
+            font-size: 0.95rem;
+        }
+        .divisor {
+            text-align: center;
+            color: var(--gold-accent);
+            font-weight: 600;
+            font-size: 0.9rem;
+            letter-spacing: 2px;
+            margin: 4px 0 8px 0;
+            text-transform: uppercase;
+        }
+    </style>
 </head>
 <body>
     <nav>
@@ -25,43 +90,67 @@
 
         <div class="card">
             <h2>Canais de Atendimento</h2>
-            <p><strong>📍 Endereço:</strong> Av. das Corporações, 1024 — Centro, Capanema-PR</p>
-            <p><strong>📞 Telefone / WhatsApp:</strong> (43) 9 9182-0583</p>
-            <p><strong>📧 E-mail Institucional:</strong> contato@advocaciaintegrada.adv.br</p>
+            <div class="canais-grid">
+                <div class="canal-item">
+                    <span class="icone">📍</span>
+                    <strong>Endereço</strong>
+                    <span>Av. das Corporações, 1024<br>Centro, Capanema-PR</span>
+                </div>
+                <div class="canal-item">
+                    <span class="icone">📞</span>
+                    <strong>Telefone / WhatsApp</strong>
+                    <span>(43) 9 9182-0583</span>
+                </div>
+                <div class="canal-item">
+                    <span class="icone">📧</span>
+                    <strong>E-mail Institucional</strong>
+                    <span>contato@advocaciaintegrada.adv.br</span>
+                </div>
+            </div>
         </div>
+
+        <p class="divisor">ou</p>
 
         <div class="card">
             <h2>Nos envie o Seu Problema!</h2>
-            <p style="text-align: center; color: var(--text-muted); margin-top: -8px; margin-bottom: 20px;">
-                Preencha os campos a seguir e nos envie. Retorno garantido!
-            </p>
+            <p class="form-intro">Preencha os campos a seguir e nos envie. Retorno garantido!</p>
 
             <form id="form-contato" onsubmit="return enviarContato(event)">
-                <label for="nome">Nome:</label>
-                <input type="text" id="nome" name="nome" placeholder="Seu nome completo" required>
+                <div class="form-linha">
+                    <div>
+                        <label for="nome">Nome</label>
+                        <input type="text" id="nome" name="nome" placeholder="Seu nome completo" required>
+                    </div>
+                    <div>
+                        <label for="area">Área da situação</label>
+                        <select id="area" name="area" required>
+                            <option value="">Escolha uma área...</option>
+                            <option value="Civil">Direito Civil e Contratos</option>
+                            <option value="Empresarial">Direito Empresarial</option>
+                            <option value="Trabalho">Direito do Trabalho</option>
+                            <option value="Outro">Outro / Não sei informar</option>
+                        </select>
+                    </div>
+                </div>
 
-                <label for="area">Selecione a Área adequada à sua situação:</label>
-                <select id="area" name="area" required>
-                    <option value="">Escolha uma área...</option>
-                    <option value="Civil">Direito Civil e Contratos</option>
-                    <option value="Empresarial">Direito Empresarial</option>
-                    <option value="Trabalho">Direito do Trabalho</option>
-                    <option value="Outro">Outro / Não sei informar</option>
-                </select>
+                <div class="form-linha">
+                    <div>
+                        <label for="telefone">Telefone</label>
+                        <input type="tel" id="telefone" name="telefone" placeholder="(00) 00000-0000" required>
+                    </div>
+                    <div>
+                        <label for="email">E-mail</label>
+                        <input type="text" id="email" name="email" placeholder="seu@email.com" required>
+                    </div>
+                </div>
 
-                <label for="telefone">Telefone:</label>
-                <input type="tel" id="telefone" name="telefone" placeholder="(00) 00000-0000" required>
-
-                <label for="email">E-mail:</label>
-                <input type="text" id="email" name="email" placeholder="seu@email.com" required>
-
-                <label for="descricao">Descreva sua complicação:</label>
+                <label for="descricao">Descreva sua complicação</label>
                 <textarea id="descricao" name="descricao" rows="5" placeholder="Conte-nos o que aconteceu..." required></textarea>
 
-                <label for="data">Data:</label>
+                <label for="data">Data</label>
                 <input type="date" id="data" name="data" required>
 
-                <div style="margin-top: 20px;">
+                <div style="margin-top: 22px;">
                     <input type="submit" value="Enviar">
                 </div>
             </form>
