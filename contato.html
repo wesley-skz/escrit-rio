@@ -2,7 +2,8 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <link rel="stylesheet" href="estilo.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="estilo.css?v=3">
     <title>Advocacia Integrada - Contato</title>
 </head>
 <body>
@@ -17,20 +18,68 @@
 
     <header class="banner">
         <h1>Fale Conosco</h1>
-        <p>Agende uma Consulta com Nossos Advogados Especialistas</p>
+        <p>Agende uma consulta com nossos Advogados especialistas</p>
     </header>
 
     <div class="container">
+
         <div class="card">
             <h2>Canais de Atendimento</h2>
-            <p><strong>📍 Endereço:</strong> Av. das Corporações, 1024 - Centro Jurídico, Sala 402</p>
-            <p><strong>📞 Telefone / WhatsApp:</strong> (11) 4004-1234</p>
+            <p><strong>📍 Endereço:</strong> Av. das Corporações, 1024 — Centro, Capanema-PR</p>
+            <p><strong>📞 Telefone / WhatsApp:</strong> (43) 9 9182-0583</p>
             <p><strong>📧 E-mail Institucional:</strong> contato@advocaciaintegrada.adv.br</p>
         </div>
+
+        <div class="card">
+            <h2>Nos envie o Seu Problema!</h2>
+            <p style="text-align: center; color: var(--text-muted); margin-top: -8px; margin-bottom: 20px;">
+                Preencha os campos a seguir e nos envie. Retorno garantido!
+            </p>
+
+            <form id="form-contato" onsubmit="return enviarContato(event)">
+                <label for="nome">Nome:</label>
+                <input type="text" id="nome" name="nome" placeholder="Seu nome completo" required>
+
+                <label for="area">Selecione a Área adequada à sua situação:</label>
+                <select id="area" name="area" required>
+                    <option value="">Escolha uma área...</option>
+                    <option value="Civil">Direito Civil e Contratos</option>
+                    <option value="Empresarial">Direito Empresarial</option>
+                    <option value="Trabalho">Direito do Trabalho</option>
+                    <option value="Outro">Outro / Não sei informar</option>
+                </select>
+
+                <label for="telefone">Telefone:</label>
+                <input type="tel" id="telefone" name="telefone" placeholder="(00) 00000-0000" required>
+
+                <label for="email">E-mail:</label>
+                <input type="text" id="email" name="email" placeholder="seu@email.com" required>
+
+                <label for="descricao">Descreva sua complicação:</label>
+                <textarea id="descricao" name="descricao" rows="5" placeholder="Conte-nos o que aconteceu..." required></textarea>
+
+                <label for="data">Data:</label>
+                <input type="date" id="data" name="data" required>
+
+                <div style="margin-top: 20px;">
+                    <input type="submit" value="Enviar">
+                </div>
+            </form>
+        </div>
+
     </div>
 
     <footer class="rodape">
         <p>&copy; 2026 Advocacia Integrada</p>
     </footer>
+
+    <script>
+        function enviarContato(e) {
+            e.preventDefault();
+            alert('Mensagem registrada! Nossa equipe entrará em contato em breve.');
+            document.getElementById('form-contato').reset();
+            return false;
+        }
+    </script>
 </body>
 </html>
