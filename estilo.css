@@ -181,7 +181,7 @@ tbody tr:nth-of-type(even) {
     margin-top: auto;
 }
 
-/* —— Elementos de destaque (Sobre Nós e páginas institucionais) —— */
+/* —— Elementos de destaque —— */
 
 .card-destaque {
     padding: 0;
@@ -320,4 +320,90 @@ tbody tr:nth-of-type(even) {
 .btn-link-outline:hover {
     background-color: var(--primary-dark);
     color: var(--gold-accent);
+}
+
+/* —— Áreas de Atuação: profissionais —— */
+
+.area-desc {
+    text-align: center;
+    color: var(--text-muted);
+    line-height: 1.6;
+    margin: 0 0 24px 0;
+    max-width: 700px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.prof-titulo {
+    text-align: center;
+    font-size: 1rem;
+    color: var(--primary-dark);
+    margin: 0 0 16px 0;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+.grid-profissionais {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 14px;
+}
+
+@media (min-width: 640px) {
+    .grid-profissionais {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+.card-prof {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    background: #fcfbf9;
+    border: 1px solid #E5E7EB;
+    border-radius: 6px;
+    padding: 14px 16px;
+    border-bottom: 3px solid var(--gold-accent);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card-prof:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.06);
+}
+
+.prof-avatar {
+    width: 52px;
+    height: 52px;
+    min-width: 52px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #1A1A1A 0%, #3D3428 100%);
+    color: var(--gold-accent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.85rem;
+    letter-spacing: 0.5px;
+    border: 2px solid var(--gold-accent);
+}
+
+.prof-info {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    min-width: 0;
+}
+
+.prof-info strong {
+    color: var(--primary-dark);
+    font-size: 0.92rem;
+}
+
+.prof-info span {
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
