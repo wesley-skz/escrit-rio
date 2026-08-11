@@ -88,6 +88,9 @@ nav .nav-login {
     border-top: 3px solid var(--gold-accent);
     margin-bottom: 25px;
     transition: box-shadow 0.3s ease, transform 0.3s ease;
+    box-sizing: border-box;
+    max-width: 100%;
+    overflow: hidden;
 }
 
 .card:hover {
@@ -248,6 +251,7 @@ tbody tr:nth-of-type(even) {
     text-align: center;
     border-bottom: 3px solid var(--gold-accent);
     transition: transform 0.25s ease, box-shadow 0.25s ease;
+    box-sizing: border-box;
 }
 
 .bloco-valor:hover {
@@ -328,10 +332,8 @@ tbody tr:nth-of-type(even) {
     text-align: center;
     color: var(--text-muted);
     line-height: 1.6;
-    margin: 0 0 24px 0;
+    margin: 0 auto 24px auto;
     max-width: 700px;
-    margin-left: auto;
-    margin-right: auto;
 }
 
 .prof-titulo {
@@ -347,9 +349,11 @@ tbody tr:nth-of-type(even) {
     display: grid;
     grid-template-columns: 1fr;
     gap: 14px;
+    width: 100%;
+    box-sizing: border-box;
 }
 
-@media (min-width: 640px) {
+@media (min-width: 700px) {
     .grid-profissionais {
         grid-template-columns: repeat(3, 1fr);
     }
@@ -358,13 +362,16 @@ tbody tr:nth-of-type(even) {
 .card-prof {
     display: flex;
     align-items: center;
-    gap: 14px;
+    gap: 12px;
     background: #fcfbf9;
     border: 1px solid #E5E7EB;
     border-radius: 6px;
-    padding: 14px 16px;
+    padding: 12px 14px;
     border-bottom: 3px solid var(--gold-accent);
     transition: transform 0.2s ease, box-shadow 0.2s ease;
+    box-sizing: border-box;
+    min-width: 0;
+    overflow: hidden;
 }
 
 .card-prof:hover {
@@ -372,37 +379,37 @@ tbody tr:nth-of-type(even) {
     box-shadow: 0 6px 16px rgba(0, 0, 0, 0.06);
 }
 
-.prof-avatar {
+.prof-foto {
     width: 52px;
     height: 52px;
     min-width: 52px;
     border-radius: 50%;
-    background: linear-gradient(135deg, #1A1A1A 0%, #3D3428 100%);
-    color: var(--gold-accent);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 700;
-    font-size: 0.85rem;
-    letter-spacing: 0.5px;
+    object-fit: cover;
     border: 2px solid var(--gold-accent);
+    display: block;
+    background: #eee;
 }
 
 .prof-info {
     display: flex;
     flex-direction: column;
-    gap: 3px;
+    gap: 2px;
     min-width: 0;
+    flex: 1;
+    overflow: hidden;
 }
 
 .prof-info strong {
     color: var(--primary-dark);
-    font-size: 0.92rem;
+    font-size: 0.88rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .prof-info span {
     color: var(--text-muted);
-    font-size: 0.8rem;
+    font-size: 0.75rem;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
