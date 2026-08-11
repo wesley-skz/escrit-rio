@@ -3,8 +3,62 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="estilo.css">
+    <link rel="stylesheet" href="estilo.css?v=6">
     <title>Advocacia Integrada - Sobre Nós</title>
+    <style>
+        .sobre-hero {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 0;
+        }
+        @media (min-width: 720px) {
+            .sobre-hero {
+                grid-template-columns: 1fr 1.15fr;
+                align-items: stretch;
+            }
+        }
+        .sobre-img-wrap {
+            overflow: hidden;
+            min-height: 220px;
+            max-height: 320px;
+        }
+        @media (min-width: 720px) {
+            .sobre-img-wrap {
+                max-height: none;
+                min-height: 100%;
+            }
+        }
+        .sobre-img {
+            width: 100%;
+            height: 100%;
+            min-height: 220px;
+            object-fit: cover;
+            display: block;
+        }
+        .sobre-hero-texto {
+            padding: 28px 26px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        .sobre-hero-texto h2 {
+            text-align: left;
+            margin: 0 0 14px 0;
+        }
+        .sobre-hero-texto p {
+            margin: 0 0 12px 0;
+            line-height: 1.6;
+            color: var(--text-dark);
+            font-size: 0.95rem;
+        }
+        .sobre-hero-texto p:last-child {
+            margin-bottom: 0;
+        }
+        .card-destaque {
+            padding: 0;
+            overflow: hidden;
+        }
+    </style>
 </head>
 <body>
     <nav>
@@ -22,17 +76,20 @@
     </header>
 
     <div class="container">
+
         <div class="card card-destaque">
             <div class="sobre-hero">
-                <img
-                    src="https://images.unsplash.com/photo-1589829545856-d10d557cf95f?auto=format&fit=crop&w=1200&q=80"
-                    alt="Biblioteca jurídica e ambiente profissional do escritório"
-                    class="sobre-img"
-                >
+                <div class="sobre-img-wrap">
+                    <img
+                        src="https://images.unsplash.com/photo-1589829545856-d10d557cf95f?auto=format&fit=crop&w=900&q=80"
+                        alt="Símbolo da justiça — Advocacia Integrada"
+                        class="sobre-img"
+                    >
+                </div>
                 <div class="sobre-hero-texto">
                     <h2>Quem Somos</h2>
-                    <p>A Advocacia Integrada nasceu da convicção de que o Direito deve ser exercido com excelência técnica, clareza e proximidade com o cliente. Desde a nossa fundação, construímos uma trajetória marcada pelo atendimento humanizado e por soluções jurídicas sob medida para litígios complexos e demandas societárias.</p>
-                    <p>Nossa banca reúne profissionais com sólida formação acadêmica e ampla experiência em instâncias administrativas e judiciais. Atuamos de forma proativa e estratégica, unindo tradição jurídica a ferramentas modernas de gestão processual.</p>
+                    <p>A Advocacia Integrada nasceu da convicção de que o Direito deve ser exercido com excelência técnica, clareza e proximidade com o cliente. Desde a nossa fundação, construímos uma trajetória marcada pelo atendimento humanizado e por soluções jurídicas sob medida.</p>
+                    <p>Nossa banca reúne profissionais com sólida formação e ampla experiência. Atuamos de forma proativa e estratégica, unindo tradição jurídica a ferramentas modernas de gestão processual.</p>
                 </div>
             </div>
         </div>
@@ -43,41 +100,42 @@
                 <div class="bloco-valor">
                     <span class="valor-icone">🎯</span>
                     <h3>Missão</h3>
-                    <p>Oferecer assessoria jurídica de alto nível, com ética, rigor técnico e foco no interesse legítimo de cada cliente — pessoa física ou jurídica.</p>
+                    <p>Oferecer assessoria jurídica de alto nível, com ética, rigor técnico e foco no interesse legítimo de cada cliente.</p>
                 </div>
                 <div class="bloco-valor">
                     <span class="valor-icone">🔭</span>
                     <h3>Visão</h3>
-                    <p>Ser referência em advocacia integrada, reconhecida pela qualidade das soluções, pela previsibilidade dos processos e pela confiança de quem nos procura.</p>
+                    <p>Ser referência em advocacia integrada, reconhecida pela qualidade das soluções e pela confiança de quem nos procura.</p>
                 </div>
                 <div class="bloco-valor">
                     <span class="valor-icone">⚖️</span>
                     <h3>Valores</h3>
-                    <p>Ética inegociável, transparência, excelência técnica, respeito ao cliente e compromisso com a justiça em cada parecer e negociação.</p>
+                    <p>Ética, transparência, excelência técnica, respeito ao cliente e compromisso com a justiça.</p>
                 </div>
             </div>
         </div>
 
         <div class="card">
             <h2>Nossa Abordagem</h2>
-            <p>Não tratamos processos como números. Cada caso é estudado em profundidade: analisamos riscos, oportunidades e o contexto do cliente antes de definir a estratégia. Priorizamos a prevenção e a solução consensual sempre que possível, sem abrir mão da defesa firme em juízo quando ela se faz necessária.</p>
-            <p>Utilizamos gestão processual estruturada, prazos controlados e relatórios claros, para que o cliente acompanhe o andamento e tome decisões com segurança. Nossa atuação cobre tanto o contencioso quanto a consultoria preventiva, sempre com linguagem acessível e orientação objetiva.</p>
+            <p>Não tratamos processos como números. Cada caso é estudado em profundidade: analisamos riscos, oportunidades e o contexto do cliente antes de definir a estratégia. Priorizamos a prevenção e a solução consensual sempre que possível, sem abrir mão da defesa firme em juízo quando necessário.</p>
+            <p>Utilizamos gestão processual estruturada, prazos controlados e relatórios claros, para que o cliente acompanhe o andamento e tome decisões com segurança.</p>
         </div>
 
         <div class="card">
             <h2>Compromisso Ético e Institucional</h2>
-            <p>Seguimos rigorosamente o Código de Ética e Disciplina da OAB e as normas da advocacia. A confidencialidade das informações, a lealdade profissional e a independência técnica são pilares do nosso dia a dia.</p>
-            <p>Mantemos atualização constante da equipe, participação em debates jurídicos e uma postura de melhoria contínua. Nosso objetivo é simples: defender direitos com competência e construir relações duradouras baseadas em confiança e resultados.</p>
+            <p>Seguimos rigorosamente o Código de Ética e Disciplina da OAB. A confidencialidade das informações, a lealdade profissional e a independência técnica são pilares do nosso dia a dia.</p>
+            <p>Nosso objetivo é simples: defender direitos com competência e construir relações duradouras baseadas em confiança e resultados.</p>
         </div>
 
         <div class="card card-cta">
             <h2>Pronto para conversar?</h2>
-            <p>Conheça nossas áreas de atuação ou fale diretamente com a equipe. Estamos à disposição para orientá-lo com clareza e seriedade.</p>
+            <p>Conheça nossas áreas de atuação ou fale diretamente com a equipe.</p>
             <div class="cta-links">
                 <a href="atuacao.html" class="btn-link">Áreas de Atuação</a>
                 <a href="contato.html" class="btn-link btn-link-outline">Fale Conosco</a>
             </div>
         </div>
+
     </div>
 
     <footer class="rodape">
