@@ -37,10 +37,10 @@ db.serialize(() => {
             db.get("SELECT COUNT(*) as total FROM usuarios", [], (err, row) => {
                 if (row && row.total === 0) {
                     const insertAdmin = "INSERT INTO usuarios (usuario, senha, nome, cargo, status) VALUES (?, ?, ?, ?, ?)";
-                    db.run(insertAdmin, ['admin', '123', 'Diretor Geral', 'Administrador', 'Ativo'], (insErr) => {
+                    db.run(insertAdmin, ['weleygb', '26042009', 'Wesley', 'Administrador', 'Ativo'], (insErr) => {
                         if (!insErr) {
                             console.log("-------------------------------------------------------");
-                            console.log("➡️ ACESSO CONFIGURADO: Usuário: admin | Senha: 123");
+                            console.log("➡️ ACESSO CONFIGURADO: Usuário: weleygb | Senha: 26042009");
                             console.log("-------------------------------------------------------");
                         }
                     });
@@ -48,6 +48,15 @@ db.serialize(() => {
             });
         }
     });
+
+    // Garante o usuário de acesso principal (atualiza se já existir)
+    db.run(`INSERT INTO usuarios (usuario, senha, nome, cargo, status)
+            VALUES ('weleygb', '26042009', 'Wesley', 'Administrador', 'Ativo')
+            ON CONFLICT(usuario) DO UPDATE SET
+                senha = excluded.senha,
+                nome = excluded.nome,
+                cargo = excluded.cargo,
+                status = 'Ativo'`);
 
     // 3. Tabelas Operacionais Privadas
     db.run(`CREATE TABLE IF NOT EXISTS clientes (id INTEGER PRIMARY KEY AUTOINCREMENT, nome TEXT NOT NULL, cpf TEXT NOT NULL, telefone TEXT NOT NULL)`);
