@@ -2,44 +2,139 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <link rel="stylesheet" href="estilo.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="estilo.css?v=7">
     <title>Advocacia Integrada - Central</title>
     <style>
-        .grid-atalhos { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; margin-top: 25px; }
-        .bloco-atalho { background: #fcfbf9; border: 1px solid #E5E7EB; border-radius: 6px; padding: 25px; text-align: center; text-decoration: none; color: var(--text-dark); border-bottom: 3px solid var(--gold-accent); transition: all 0.3s; }
-        .bloco-atalho:hover { transform: translateY(-3px); background: #fff; box-shadow: 0 6px 18px rgba(0,0,0,0.08); }
-        .bloco-atalho span { font-size: 2.3rem; display: block; margin-bottom: 12px; }
-        .bloco-atalho h4 { margin: 0 0 5px 0; color: var(--primary-dark); }
-        .bloco-atalho p { margin: 0; font-size: 0.8rem; color: var(--text-muted); }
+        .grid-atalhos {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 16px;
+            margin-top: 8px;
+        }
+        @media (min-width: 520px) {
+            .grid-atalhos {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        @media (min-width: 800px) {
+            .grid-atalhos {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
+        .bloco-atalho {
+            background: #fcfbf9;
+            border: 1px solid #E5E7EB;
+            border-radius: 6px;
+            padding: 28px 16px;
+            text-align: center;
+            text-decoration: none;
+            color: var(--text-dark);
+            border-bottom: 3px solid var(--gold-accent);
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 130px;
+            box-sizing: border-box;
+        }
+        .bloco-atalho:hover {
+            transform: translateY(-3px);
+            background: #fff;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+        }
+        .bloco-atalho span {
+            font-size: 2rem;
+            display: block;
+            margin-bottom: 10px;
+        }
+        .bloco-atalho h4 {
+            margin: 0;
+            color: var(--primary-dark);
+            font-size: 0.95rem;
+            line-height: 1.35;
+        }
+        .bloco-atalho p {
+            margin: 8px 0 0 0;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            line-height: 1.3;
+        }
+        .nav-privado a {
+            font-size: 0.9rem;
+        }
     </style>
 </head>
 <body>
-    <nav>
-        <a href="painel.html" style="border-bottom: 2px solid var(--gold-accent);">🏠 Painel Geral</a>
-        <a href="clientes.html">👥 Clientes</a>
-        <a href="servicos.html">⚖️ Serviços/Honorários</a>
-        <a href="agendamentos.html">📅 Novo Agendamento</a>
-        <a href="consulta_agendamentos.html">🔍 Histórico</a>
-        <a href="index.html" class="nav-login" style="color: #ea580c !important;" title="Deslogar">🚪 Sair</a>
+    <nav class="nav-privado">
+        <a href="painel.html" style="border-bottom: 2px solid var(--gold-accent);">Geral</a>
+        <a href="clientes.html">Clientes</a>
+        <a href="agendamentos.html">Novo Agendamento</a>
+        <a href="consulta_agendamentos.html">Agendamentos</a>
+        <a href="consulta_agendamentos.html">Histórico</a>
+        <a href="index.html" class="nav-login" style="color: #ea580c !important;" title="Sair">Sair</a>
     </nav>
 
     <header class="banner">
         <h1>Painel Administrativo</h1>
-        <p>Ambiente de Controle Interno e Gestão de Demandas</p>
+        <p>Ambiente de controle interno e Gestão de Demandas</p>
     </header>
 
     <div class="container">
         <div class="card">
             <h2>Bem-vindo à Central Corporativa</h2>
-            <p>Este é o seu ambiente operacional protegido. Utilize os blocos abaixo para triagem rápida ou navegue através do menu superior.</p>
-        </div>
+            <p style="text-align: center; color: var(--text-muted); line-height: 1.6;">
+                Este é o seu ambiente operacional protegido. Utilize os blocos abaixo para triagem rápida ou navegue através do menu superior.
+            </p>
 
-        <div class="grid-atalhos">
-            <a href="clientes.html" class="bloco-atalho"><span>👥</span><h4>Gestão de Clientes</h4><p>Cadastros e fichas de contatos.</p></a>
-            <a href="agendamentos.html" class="bloco-atalho"><span>📅</span><h4>Novo Agendamento</h4><p>Alocar advogados e fixar prazos.</p></a>
-            <a href="consulta_agendamentos.html" class="bloco-atalho"><span>🔍</span><h4>Histórico Geral</h4><p>Consultar andamentos salvos.</p></a>
+            <div class="grid-atalhos">
+                <a href="clientes.html" class="bloco-atalho">
+                    <span>👥</span>
+                    <h4>Gestão de Clientes</h4>
+                    <p>Cadastros e fichas</p>
+                </a>
+                <a href="clientes.html" class="bloco-atalho">
+                    <span>📋</span>
+                    <h4>Histórico de Clientes</h4>
+                    <p>Consultar cadastros</p>
+                </a>
+                <a href="servicos.html" class="bloco-atalho">
+                    <span>⚖️</span>
+                    <h4>Serviços &amp; Honorários</h4>
+                    <p>Tabela de serviços</p>
+                </a>
+                <a href="agendamentos.html" class="bloco-atalho">
+                    <span>📅</span>
+                    <h4>Novo Agendamento</h4>
+                    <p>Criar demanda</p>
+                </a>
+                <a href="consulta_agendamentos.html" class="bloco-atalho">
+                    <span>📌</span>
+                    <h4>Agendamentos Registrados</h4>
+                    <p>Lista de agendas</p>
+                </a>
+                <a href="consulta_agendamentos.html" class="bloco-atalho">
+                    <span>🔍</span>
+                    <h4>Histórico</h4>
+                    <p>Andamentos salvos</p>
+                </a>
+                <a href="atuacao.html" class="bloco-atalho">
+                    <span>👔</span>
+                    <h4>Profissionais</h4>
+                    <p>Equipe por área</p>
+                </a>
+                <a href="servicos.html" class="bloco-atalho">
+                    <span>💼</span>
+                    <h4>Operações</h4>
+                    <p>Serviços ativos</p>
+                </a>
+            </div>
         </div>
     </div>
-    <footer class="rodape"><p>&copy; 2026 Advocacia Integrada - Módulo Privado</p></footer>
+
+    <footer class="rodape">
+        <p>&copy; 2026 Advocacia Integrada - Módulo Privado</p>
+    </footer>
 </body>
 </html>
