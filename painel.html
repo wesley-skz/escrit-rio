@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="estilo.css?v=7">
+    <link rel="stylesheet" href="estilo.css?v=8">
     <title>Advocacia Integrada - Central</title>
     <style>
         .grid-atalhos {
@@ -13,14 +13,10 @@
             margin-top: 8px;
         }
         @media (min-width: 520px) {
-            .grid-atalhos {
-                grid-template-columns: repeat(2, 1fr);
-            }
+            .grid-atalhos { grid-template-columns: repeat(2, 1fr); }
         }
         @media (min-width: 800px) {
-            .grid-atalhos {
-                grid-template-columns: repeat(4, 1fr);
-            }
+            .grid-atalhos { grid-template-columns: repeat(4, 1fr); }
         }
         .bloco-atalho {
             background: #fcfbf9;
@@ -44,25 +40,79 @@
             background: #fff;
             box-shadow: 0 6px 18px rgba(0,0,0,0.08);
         }
-        .bloco-atalho span {
-            font-size: 2rem;
-            display: block;
-            margin-bottom: 10px;
-        }
-        .bloco-atalho h4 {
-            margin: 0;
-            color: var(--primary-dark);
-            font-size: 0.95rem;
-            line-height: 1.35;
-        }
-        .bloco-atalho p {
-            margin: 8px 0 0 0;
-            font-size: 0.75rem;
-            color: var(--text-muted);
-            line-height: 1.3;
-        }
-        .nav-privado a {
+        .bloco-atalho span { font-size: 2rem; display: block; margin-bottom: 10px; }
+        .bloco-atalho h4 { margin: 0; color: var(--primary-dark); font-size: 0.95rem; line-height: 1.35; }
+        .bloco-atalho p { margin: 8px 0 0 0; font-size: 0.75rem; color: var(--text-muted); line-height: 1.3; }
+        .nav-privado a { font-size: 0.9rem; }
+
+        .aviso {
+            border-radius: 6px;
+            padding: 14px 18px;
+            margin-bottom: 14px;
             font-size: 0.9rem;
+            line-height: 1.5;
+            border-left: 4px solid;
+        }
+        .aviso strong { display: block; margin-bottom: 4px; }
+        .aviso-info {
+            background: #f8f6f2;
+            border-left-color: var(--gold-accent);
+            color: var(--text-dark);
+        }
+        .aviso-alerta {
+            background: #fff8f0;
+            border-left-color: #d97706;
+            color: #78350f;
+        }
+        .aviso-ok {
+            background: #f3faf5;
+            border-left-color: #16a34a;
+            color: #14532d;
+        }
+
+        .resumo-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+            margin-top: 8px;
+        }
+        @media (min-width: 600px) {
+            .resumo-grid { grid-template-columns: repeat(3, 1fr); }
+        }
+        .resumo-item {
+            background: #fcfbf9;
+            border: 1px solid #E5E7EB;
+            border-radius: 6px;
+            padding: 18px 14px;
+            text-align: center;
+            border-bottom: 3px solid var(--gold-accent);
+        }
+        .resumo-item .num {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: var(--primary-dark);
+            display: block;
+            margin-bottom: 4px;
+        }
+        .resumo-item .label {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .lista-orientacoes {
+            margin: 0;
+            padding-left: 1.2rem;
+            color: var(--text-muted);
+            line-height: 1.7;
+            font-size: 0.92rem;
+        }
+        .lista-orientacoes li { margin-bottom: 6px; }
+
+        .hora-sistema {
+            text-align: center;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin: 0 0 18px 0;
         }
     </style>
 </head>
@@ -82,12 +132,51 @@
     </header>
 
     <div class="container">
+
         <div class="card">
             <h2>Bem-vindo à Central Corporativa</h2>
-            <p style="text-align: center; color: var(--text-muted); line-height: 1.6;">
+            <p style="text-align: center; color: var(--text-muted); line-height: 1.6; margin-bottom: 12px;">
                 Este é o seu ambiente operacional protegido. Utilize os blocos abaixo para triagem rápida ou navegue através do menu superior.
             </p>
+            <p class="hora-sistema" id="hora-sistema">Carregando data e horário...</p>
 
+            <div class="aviso aviso-info">
+                <strong>📌 Aviso operacional</strong>
+                Confira sempre os prazos processuais antes de registrar um novo agendamento. Dados incompletos podem atrasar a triagem interna.
+            </div>
+            <div class="aviso aviso-alerta">
+                <strong>⚠️ Atenção</strong>
+                Não compartilhe suas credenciais de acesso. Ao terminar o expediente, utilize o botão <em>Sair</em> no menu superior.
+            </div>
+            <div class="aviso aviso-ok">
+                <strong>✅ Sistema disponível</strong>
+                Módulos de clientes, serviços e agendamentos operando normalmente neste ambiente.
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Resumo rápido</h2>
+            <div class="resumo-grid">
+                <div class="resumo-item">
+                    <span class="num" id="n-clientes">—</span>
+                    <span class="label">Clientes cadastrados</span>
+                </div>
+                <div class="resumo-item">
+                    <span class="num" id="n-servicos">—</span>
+                    <span class="label">Serviços / honorários</span>
+                </div>
+                <div class="resumo-item">
+                    <span class="num" id="n-agendamentos">—</span>
+                    <span class="label">Agendamentos registrados</span>
+                </div>
+            </div>
+            <p style="text-align: center; font-size: 0.8rem; color: var(--text-muted); margin: 14px 0 0 0;">
+                Os números são atualizados automaticamente quando o servidor local estiver ativo.
+            </p>
+        </div>
+
+        <div class="card">
+            <h2>Atalhos operacionais</h2>
             <div class="grid-atalhos">
                 <a href="clientes.html" class="bloco-atalho">
                     <span>👥</span>
@@ -131,10 +220,50 @@
                 </a>
             </div>
         </div>
+
+        <div class="card">
+            <h2>Orientações do dia</h2>
+            <ul class="lista-orientacoes">
+                <li>Priorize o cadastro completo do cliente (nome, CPF/CNPJ e telefone) antes de gerar agendamento.</li>
+                <li>Ao registrar honorários, confira descrição, valor e tempo estimado.</li>
+                <li>Use o histórico para validar demandas já lançadas e evitar duplicidade.</li>
+                <li>Em caso de dúvida sobre área jurídica, consulte a página de profissionais / áreas de atuação.</li>
+            </ul>
+        </div>
+
     </div>
 
     <footer class="rodape">
         <p>&copy; 2026 Advocacia Integrada - Módulo Privado</p>
     </footer>
+
+    <script>
+        (function () {
+            const el = document.getElementById('hora-sistema');
+            function atualizarHora() {
+                const agora = new Date();
+                el.textContent = 'Acesso em ' + agora.toLocaleString('pt-BR', {
+                    weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
+                    hour: '2-digit', minute: '2-digit'
+                });
+            }
+            atualizarHora();
+            setInterval(atualizarHora, 60000);
+
+            function carregarContagem(url, id) {
+                fetch(url)
+                    .then(function (r) { return r.ok ? r.json() : []; })
+                    .then(function (dados) {
+                        document.getElementById(id).textContent = Array.isArray(dados) ? dados.length : '—';
+                    })
+                    .catch(function () {
+                        document.getElementById(id).textContent = '—';
+                    });
+            }
+            carregarContagem('/listar-clientes', 'n-clientes');
+            carregarContagem('/listar-servicos', 'n-servicos');
+            carregarContagem('/listar-agendamentos', 'n-agendamentos');
+        })();
+    </script>
 </body>
 </html>
