@@ -59,7 +59,19 @@ db.serialize(() => {
                 status = 'Ativo'`);
 
     // 3. Tabelas Operacionais Privadas
-    db.run(`CREATE TABLE IF NOT EXISTS clientes (id INTEGER PRIMARY KEY AUTOINCREMENT, nome TEXT NOT NULL, cpf TEXT NOT NULL, telefone TEXT NOT NULL)`);
+    db.run(`CREATE TABLE IF NOT EXISTS clientes (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        nome TEXT NOT NULL,
+        cpf TEXT NOT NULL,
+        telefone TEXT NOT NULL,
+        endereco TEXT,
+        email TEXT,
+        data_nascimento TEXT
+    )`);
+    // Colunas extras para bancos já existentes
+    db.run(`ALTER TABLE clientes ADD COLUMN endereco TEXT`, () => {});
+    db.run(`ALTER TABLE clientes ADD COLUMN email TEXT`, () => {});
+    db.run(`ALTER TABLE clientes ADD COLUMN data_nascimento TEXT`, () => {});
     db.run(`CREATE TABLE IF NOT EXISTS servicos (id INTEGER PRIMARY KEY AUTOINCREMENT, descricao TEXT NOT NULL, preco REAL NOT NULL, tempo_estimado INTEGER NOT NULL)`);
     db.run(`CREATE TABLE IF NOT EXISTS agendamentos (id INTEGER PRIMARY KEY AUTOINCREMENT, data TEXT NOT NULL, cliente_id INTEGER NOT NULL, responsavel TEXT NOT NULL, total REAL NOT NULL, tempo_total INTEGER NOT NULL)`);
     db.run(`CREATE TABLE IF NOT EXISTS itens_agendamento (id INTEGER PRIMARY KEY AUTOINCREMENT, agendamento_id INTEGER NOT NULL, servico_id INTEGER NOT NULL, preco_cobrado REAL NOT NULL)`);
@@ -110,12 +122,24 @@ app.get('/listar-sugestoes', (req, res) => {
    ROTAS PRIVADAS (CLIENTES, SERVIÇOS E OPERAÇÕES)
    ========================================================================== */
 app.post('/salvar-cliente', (req, res) => {
-    const { nome, cpf, telefone } = req.body;
-    db.run('INSERT INTO clientes (nome, cpf, telefone) VALUES (?, ?, ?)', [nome, cpf, telefone], () => res.redirect('/clientes.html'));
+    const { nome, cpf, telefone, endereco, email, data_nascimento } = req.body;
+    db.run(
+        'INSERT INTO clientes (nome, cpf, telefone, endereco, email, data_nascimento) VALUES (?, ?, ?, ?, ?, ?)',
+        [nome, cpf, telefone, endereco || '', email || '', data_nascimento || ''],
+        () => res.redirect('/clientes.html')
+    );
 });
 
 app.get('/listar-clientes', (req, res) => {
-    db.all('SELECT * FROM clientes ORDER BY nome ASC', [], (err, rows) => res.json(rows));
+    db.all('SELECT * FROM clientes ORDER BY nome ASC', [], (err, rows) => res.json(rows || []));
+});
+
+app.get('/cliente/:id', (req, res) => {
+    db.get('SELECT * FROM clientes WHERE id = ?', [req.params.id], (err, row) => {
+        if (err) return res.status(500).json({ error: err.message });
+        if (!row) return res.status(404).json({ error: 'Cliente não encontrado' });
+        res.json(row);
+    });
 });
 
 app.post('/salvar-servico', (req, res) => {
