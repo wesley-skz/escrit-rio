@@ -2,17 +2,83 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <link rel="stylesheet" href="estilo.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="estilo.css?v=8">
     <title>Advocacia Integrada - Gestão de Clientes</title>
+    <style>
+        .form-linha {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 0 16px;
+        }
+        @media (min-width: 640px) {
+            .form-linha { grid-template-columns: 1fr 1fr; }
+        }
+        .btn-inspecionar {
+            background: var(--primary-dark);
+            color: var(--gold-accent);
+            border: 1px solid var(--gold-accent);
+            padding: 6px 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            border-radius: 4px;
+            cursor: pointer;
+            text-transform: uppercase;
+            width: auto;
+        }
+        .btn-inspecionar:hover {
+            background: var(--gold-accent);
+            color: var(--primary-dark);
+        }
+        .modal-fundo {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.45);
+            z-index: 100;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+        }
+        .modal-fundo.aberto { display: flex; }
+        .modal-box {
+            background: #fff;
+            border-radius: 6px;
+            border-top: 3px solid var(--gold-accent);
+            padding: 24px;
+            max-width: 420px;
+            width: 100%;
+            box-shadow: 0 12px 40px rgba(0,0,0,0.2);
+        }
+        .modal-box h3 {
+            margin: 0 0 16px 0;
+            text-align: center;
+            color: var(--primary-dark);
+        }
+        .modal-box p {
+            margin: 0 0 10px 0;
+            font-size: 0.9rem;
+            color: var(--text-dark);
+            line-height: 1.45;
+        }
+        .modal-box p strong { color: var(--primary-dark); }
+        .modal-fechar {
+            margin-top: 16px;
+            width: 100%;
+        }
+        .nav-privado a { font-size: 0.9rem; }
+        .tabela-scroll { overflow-x: auto; }
+    </style>
 </head>
 <body>
-    <nav>
-        <a href="painel.html">🏠 Painel Geral</a>
-        <a href="clientes.html" style="border-bottom: 2px solid var(--gold-accent);">👥 Clientes</a>
-        <a href="servicos.html">⚖️ Serviços/Honorários</a>
-        <a href="agendamentos.html">📅 Novo Agendamento</a>
-        <a href="consulta_agendamentos.html">🔍 Histórico</a>
-        <a href="index.html" class="nav-login" style="color: #ea580c !important;">🚪 Sair</a>
+    <nav class="nav-privado">
+        <a href="painel.html">Geral</a>
+        <a href="clientes.html" style="border-bottom: 2px solid var(--gold-accent);">Clientes</a>
+        <a href="servicos.html">Serviços</a>
+        <a href="agendamentos.html">Novo Agendamento</a>
+        <a href="consulta_agendamentos.html">Agendamentos</a>
+        <a href="consulta_agendamentos.html">Histórico</a>
+        <a href="index.html" class="nav-login" style="color: #ea580c !important;" title="Sair">Sair</a>
     </nav>
 
     <header class="banner">
@@ -24,42 +90,127 @@
         <div class="card">
             <h2>Novo Cadastro de Cliente</h2>
             <form action="/salvar-cliente" method="POST">
-                <label for="nome">Nome / Razão Social:</label>
-                <input type="text" id="nome" name="nome" placeholder="Ex: João da Silva" required>
-                
-                <label for="cpf">CPF / CNPJ:</label>
-                <input type="text" id="cpf" name="cpf" placeholder="000.000.000-00" required>
-                
-                <label for="telefone">Telefone / WhatsApp:</label>
-                <input type="tel" id="telefone" name="telefone" placeholder="(11) 99999-9999" required>
-                
-                <div style="margin-top: 15px;">
+                <div class="form-linha">
+                    <div>
+                        <label for="nome">Nome / Razão Social</label>
+                        <input type="text" id="nome" name="nome" placeholder="Ex: João da Silva" required>
+                    </div>
+                    <div>
+                        <label for="cpf">CPF / CNPJ</label>
+                        <input type="text" id="cpf" name="cpf" placeholder="000.000.000-00" required>
+                    </div>
+                </div>
+
+                <div class="form-linha">
+                    <div>
+                        <label for="telefone">Telefone</label>
+                        <input type="tel" id="telefone" name="telefone" placeholder="(00) 00000-0000" required>
+                    </div>
+                    <div>
+                        <label for="email">E-mail</label>
+                        <input type="text" id="email" name="email" placeholder="cliente@email.com">
+                    </div>
+                </div>
+
+                <label for="endereco">Endereço</label>
+                <input type="text" id="endereco" name="endereco" placeholder="Rua, número, bairro, cidade">
+
+                <label for="data_nascimento">Data de nascimento</label>
+                <input type="date" id="data_nascimento" name="data_nascimento">
+
+                <div style="margin-top: 20px;">
                     <button type="submit">Salvar Ficha do Cliente</button>
                 </div>
             </form>
         </div>
 
         <div class="card">
-            <h2>Clientes Cadastrados</h2>
-            <table>
-                <thead>
-                    <tr><th>Nome/Razão Social</th><th>CPF/CNPJ</th><th>Telefone</th></tr>
-                </thead>
-                <tbody id="lista-clientes"></tbody>
-            </table>
+            <h2>Clientes cadastrados</h2>
+            <div class="tabela-scroll">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Nome / Razão Social</th>
+                            <th>CPF / CNPJ</th>
+                            <th>Telefone</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody id="lista-clientes">
+                        <tr><td colspan="4" style="text-align:center;color:#666;">Carregando...</td></tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 
+    <div class="modal-fundo" id="modal-cliente" onclick="fecharSeFundo(event)">
+        <div class="modal-box">
+            <h3>Ficha do Cliente</h3>
+            <div id="modal-conteudo"></div>
+            <button type="button" class="modal-fechar" onclick="fecharModal()">Fechar</button>
+        </div>
+    </div>
+
+    <footer class="rodape">
+        <p>&copy; 2026 Advocacia Integrada - Módulo Privado</p>
+    </footer>
+
     <script>
-        fetch('/listar-clientes')
-            .then(res => res.json())
-            .then(clientes => {
-                const corpoTabela = document.getElementById('lista-clientes');
-                clientes.forEach(c => {
-                    corpoTabela.innerHTML += `<tr><td><strong>${c.nome}</strong></td><td>${c.cpf}</td><td>${c.telefone}</td></tr>`;
+        function inspecionar(id) {
+            fetch('/cliente/' + id)
+                .then(function (r) { return r.json(); })
+                .then(function (c) {
+                    if (c.error) {
+                        alert(c.error);
+                        return;
+                    }
+                    var html = ''
+                        + '<p><strong>Nome / Razão Social:</strong> ' + (c.nome || '—') + '</p>'
+                        + '<p><strong>CPF / CNPJ:</strong> ' + (c.cpf || '—') + '</p>'
+                        + '<p><strong>Telefone:</strong> ' + (c.telefone || '—') + '</p>'
+                        + '<p><strong>E-mail:</strong> ' + (c.email || '—') + '</p>'
+                        + '<p><strong>Endereço:</strong> ' + (c.endereco || '—') + '</p>'
+                        + '<p><strong>Data de nascimento:</strong> ' + (c.data_nascimento || '—') + '</p>';
+                    document.getElementById('modal-conteudo').innerHTML = html;
+                    document.getElementById('modal-cliente').classList.add('aberto');
+                })
+                .catch(function () {
+                    alert('Não foi possível carregar a ficha. Verifique se o servidor está ativo.');
                 });
+        }
+
+        function fecharModal() {
+            document.getElementById('modal-cliente').classList.remove('aberto');
+        }
+
+        function fecharSeFundo(e) {
+            if (e.target.id === 'modal-cliente') fecharModal();
+        }
+
+        fetch('/listar-clientes')
+            .then(function (res) { return res.ok ? res.json() : []; })
+            .then(function (clientes) {
+                var corpo = document.getElementById('lista-clientes');
+                if (!clientes || clientes.length === 0) {
+                    corpo.innerHTML = '<tr><td colspan="4" style="text-align:center;color:#666;">Nenhum cliente cadastrado ainda.</td></tr>';
+                    return;
+                }
+                corpo.innerHTML = '';
+                clientes.forEach(function (c) {
+                    corpo.innerHTML +=
+                        '<tr>' +
+                        '<td><strong>' + c.nome + '</strong></td>' +
+                        '<td>' + c.cpf + '</td>' +
+                        '<td>' + c.telefone + '</td>' +
+                        '<td><button type="button" class="btn-inspecionar" onclick="inspecionar(' + c.id + ')">Inspecionar</button></td>' +
+                        '</tr>';
+                });
+            })
+            .catch(function () {
+                document.getElementById('lista-clientes').innerHTML =
+                    '<tr><td colspan="4" style="text-align:center;color:#666;">Lista disponível com o servidor local ativo.</td></tr>';
             });
     </script>
-    <footer class="rodape"><p>&copy; 2026 Advocacia Integrada - Privado</p></footer>
 </body>
 </html>
