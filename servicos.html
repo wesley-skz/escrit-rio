@@ -2,48 +2,50 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="estilo.css">
     <title>Advocacia Integrada - Serviços e Honorários</title>
 </head>
 <body>
-    <nav>
-        <a href="painel.html">🏠 Painel Geral</a>
-        <a href="clientes.html">👥 Clientes</a>
-        <a href="servicos.html" style="border-bottom: 2px solid var(--gold-accent);">⚖️ Serviços/Honorários</a>
-        <a href="agendamentos.html">📅 Novo Agendamento</a>
-        <a href="consulta_agendamentos.html">🔍 Histórico</a>
-        <a href="index.html" class="nav-login" style="color: #ea580c !important;">🚪 Sair</a>
+    <nav class="nav-privado">
+        <a href="painel.html">Geral</a>
+        <a href="clientes.html">Clientes</a>
+        <a href="servicos.html" style="border-bottom: 2px solid var(--gold-accent);">Serviços</a>
+        <a href="agendamentos.html">Novo Agendamento</a>
+        <a href="consulta_agendamentos.html">Agendamentos</a>
+        <a href="consulta_agendamentos.html">Histórico</a>
+        <a href="index.html" class="nav-login" style="color: #ea580c !important;" title="Sair">Sair</a>
     </nav>
 
     <header class="banner">
         <h1>Catálogo de Serviços e Honorários</h1>
-        <p>Configure a tabela base de precificação administrativa e judicial</p>
+        <p>Configure os preços e o tempo estimado de cada ato jurídico</p>
     </header>
 
     <div class="container">
         <div class="card">
-            <h2>Novo Serviço / Ato Judicial</h2>
+            <h2>Cadastrar Novo Serviço</h2>
             <form action="/salvar-servico" method="POST">
-                <label for="descricao">Descrição do Ato / Serviço Jurídico:</label>
-                <input type="text" id="descricao" name="descricao" placeholder="Ex: Audiência de Conciliação ou Análise Contratual" required>
-                
-                <label for="preco">Honorários Base (R$):</label>
+                <label for="descricao">Descrição do Serviço:</label>
+                <input type="text" id="descricao" name="descricao" placeholder="Ex: Consultoria Societária" required>
+
+                <label for="preco">Honorário (R$):</label>
                 <input type="number" step="0.01" id="preco" name="preco" placeholder="0.00" required>
-                
-                <label for="tempo_estimado">Prazo Técnico Estimado (Horas de Trabalho):</label>
-                <input type="number" id="tempo_estimado" name="tempo_estimado" placeholder="Ex: 5" required>
-                
+
+                <label for="tempo_estimado">Tempo Estimado (minutos):</label>
+                <input type="number" id="tempo_estimado" name="tempo_estimado" placeholder="60" required>
+
                 <div style="margin-top: 15px;">
-                    <button type="submit">Inserir no Catálogo</button>
+                    <button type="submit">Salvar Serviço no Catálogo</button>
                 </div>
             </form>
         </div>
 
         <div class="card">
-            <h2>Tabela Base Cadastrada</h2>
+            <h2>Serviços Disponíveis</h2>
             <table>
                 <thead>
-                    <tr><th>Descrição do Ato</th><th>Honorários Base</th><th>Prazo Est.</th></tr>
+                    <tr><th>Descrição</th><th>Preço (R$)</th><th>Tempo (min)</th></tr>
                 </thead>
                 <tbody id="lista-servicos"></tbody>
             </table>
@@ -54,12 +56,12 @@
         fetch('/listar-servicos')
             .then(res => res.json())
             .then(servicos => {
-                const corpoTabela = document.getElementById('lista-servicos');
+                const corpo = document.getElementById('lista-servicos');
                 servicos.forEach(s => {
-                    corpoTabela.innerHTML += `<tr><td><strong>${s.descricao}</strong></td><td>R$ ${s.preco.toFixed(2)}</td><td>${s.tempo_estimado}h</td></tr>`;
+                    corpo.innerHTML += `<tr><td><strong>${s.descricao}</strong></td><td>R$ ${parseFloat(s.preco).toFixed(2)}</td><td>${s.tempo_estimado}</td></tr>`;
                 });
             });
     </script>
-    <footer class="rodape"><p>&copy; 2026 Advocacia Integrada - Privado</p></footer>
+    <footer class="rodape"><p>&copy; 2026 Advocacia Integrada - Módulo Privado</p></footer>
 </body>
 </html>
