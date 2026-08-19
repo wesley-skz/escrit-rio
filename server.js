@@ -32,31 +32,33 @@ db.serialize(() => {
         nome TEXT NOT NULL,
         cargo TEXT NOT NULL,
         status TEXT DEFAULT 'Ativo'
-    )`, (err) => {
-        if (!err) {
-            db.get("SELECT COUNT(*) as total FROM usuarios", [], (err, row) => {
-                if (row && row.total === 0) {
-                    const insertAdmin = "INSERT INTO usuarios (usuario, senha, nome, cargo, status) VALUES (?, ?, ?, ?, ?)";
-                    db.run(insertAdmin, ['weleygb', '26042009', 'Wesley', 'Administrador', 'Ativo'], (insErr) => {
-                        if (!insErr) {
-                            console.log("-------------------------------------------------------");
-                            console.log("➡️ ACESSO CONFIGURADO: Usuário: weleygb | Senha: 26042009");
-                            console.log("-------------------------------------------------------");
-                        }
-                    });
-                }
-            });
-        }
-    });
+    )`);
 
-    // Garante o usuário de acesso principal (atualiza se já existir)
-    db.run(`INSERT INTO usuarios (usuario, senha, nome, cargo, status)
-            VALUES ('weleygb', '26042009', 'Wesley', 'Administrador', 'Ativo')
-            ON CONFLICT(usuario) DO UPDATE SET
-                senha = excluded.senha,
-                nome = excluded.nome,
-                cargo = excluded.cargo,
-                status = 'Ativo'`);
+    // Sempre garante o login oficial (funciona mesmo com banco antigo no Codespace)
+    db.run(
+        `INSERT INTO usuarios (usuario, senha, nome, cargo, status)
+         VALUES (?, ?, ?, ?, ?)
+         ON CONFLICT(usuario) DO UPDATE SET
+            senha = excluded.senha,
+            nome = excluded.nome,
+            cargo = excluded.cargo,
+            status = 'Ativo'`,
+        ['wesleygb', '26042009', 'Wesley', 'Administrador', 'Ativo'],
+        (err) => {
+            if (err) console.error('Erro ao configurar usuário wesleygb:', err.message);
+            else {
+                console.log("-------------------------------------------------------");
+                console.log("➡️ LOGIN: usuário = wesleygb | senha = 26042009");
+                console.log("-------------------------------------------------------");
+            }
+        }
+    );
+
+    // Atualiza senha do admin antigo (se existir), para não depender só do usuário novo
+    db.run(
+        `UPDATE usuarios SET senha = ?, status = 'Ativo' WHERE usuario = ?`,
+        ['26042009', 'admin']
+    );
 
     // 3. Tabelas Operacionais Privadas
     db.run(`CREATE TABLE IF NOT EXISTS clientes (
@@ -81,8 +83,8 @@ db.serialize(() => {
    ROTAS DE AUTENTICAÇÃO (LOGIN)
    ========================================================================== */
 app.post('/autenticar', (req, res) => {
-    const usuarioDigitado = req.body.usuario;
-    const senhaDigitada = req.body.senha;
+    const usuarioDigitado = String(req.body.usuario || '').trim();
+    const senhaDigitada = String(req.body.senha || '').trim();
 
     console.log(`[Tentativa de Acesso] Usuário: ${usuarioDigitado}`);
 
@@ -183,5 +185,6 @@ app.get('/detalhes-agendamento/:id', (req, res) => {
 app.listen(3000, () => {
     console.log("=======================================================");
     console.log("🚀 ADVOCACIA INTEGRADA ATIVA: http://localhost:3000");
+    console.log("➡️ LOGIN: wesleygb | 26042009");
     console.log("=======================================================");
 });
