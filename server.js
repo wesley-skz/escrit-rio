@@ -1,11 +1,69 @@
 const express = require('express');
+const session = require('express-session');
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 const app = express();
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
-app.use(express.static(__dirname));
+
+app.use(session({
+    secret: 'advocacia-integrada-sessao-2026',
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+        httpOnly: true,
+        sameSite: 'lax',
+        maxAge: 8 * 60 * 60 * 1000
+    }
+}));
+
+const PAGINAS_PRIVADAS = [
+    'painel.html',
+    'clientes.html',
+    'servicos.html',
+    'novo_agendamento.html',
+    'agendamentos.html',
+    'historico.html',
+    'consulta_agendamentos.html'
+];
+
+function exigirLogin(req, res, next) {
+    if (req.session && req.session.logado) return next();
+    if (req.xhr || (req.headers.accept && req.headers.accept.indexOf('json') !== -1)) {
+        return res.status(401).json({ error: 'Não autenticado' });
+    }
+    return res.redirect('/login.html');
+}
+
+function headersSemCache(res) {
+    res.set({
+        'Cache-Control': 'no-store, no-cache, must-revalidate, private',
+        'Pragma': 'no-cache',
+        'Expires': '0'
+    });
+}
+
+// Bloqueia páginas privadas sem sessão (antes do static)
+app.use((req, res, next) => {
+    const file = path.basename(req.path);
+    if (PAGINAS_PRIVADAS.includes(file)) {
+        if (!req.session || !req.session.logado) {
+            headersSemCache(res);
+            return res.redirect('/login.html');
+        }
+        headersSemCache(res);
+    }
+    next();
+});
+
+app.use(express.static(__dirname, {
+    setHeaders: (res, filePath) => {
+        if (PAGINAS_PRIVADAS.some(p => filePath.endsWith(p))) {
+            headersSemCache(res);
+        }
+    }
+}));
 
 const db = new sqlite3.Database(path.join(__dirname, 'advocacia.db'), (err) => {
     if (err) console.error("Erro ao conectar ao SQLite:", err.message);
@@ -111,13 +169,34 @@ app.post('/autenticar', (req, res) => {
     db.get("SELECT * FROM usuarios WHERE usuario = ? AND senha = ? AND status = 'Ativo'",
         [usuarioDigitado, senhaDigitada], (err, row) => {
             if (err) return res.status(500).send("Erro interno no banco de dados.");
-            if (row) return res.redirect('/painel.html');
+            if (row) {
+                req.session.logado = true;
+                req.session.usuario = row.usuario;
+                req.session.nome = row.nome;
+                return req.session.save(() => res.redirect('/painel.html'));
+            }
             return res.send(`<script>alert('Usuário ou Senha incorretos!'); window.location.href='/login.html';</script>`);
         });
 });
 
-/* ===== CLIENTES ===== */
-app.post('/salvar-cliente', (req, res) => {
+app.get('/sair', (req, res) => {
+    req.session.destroy(() => {
+        res.clearCookie('connect.sid');
+        headersSemCache(res);
+        res.redirect('/login.html');
+    });
+});
+
+app.get('/api/sessao', (req, res) => {
+    headersSemCache(res);
+    if (req.session && req.session.logado) {
+        return res.json({ logado: true, usuario: req.session.usuario, nome: req.session.nome });
+    }
+    res.status(401).json({ logado: false });
+});
+
+/* ===== CLIENTES (protegidos) ===== */
+app.post('/salvar-cliente', exigirLogin, (req, res) => {
     const { nome, cpf, telefone, endereco, email, data_nascimento } = req.body;
     db.run(
         'INSERT INTO clientes (nome, cpf, telefone, endereco, email, data_nascimento) VALUES (?, ?, ?, ?, ?, ?)',
@@ -125,17 +204,17 @@ app.post('/salvar-cliente', (req, res) => {
         () => res.redirect('/clientes.html')
     );
 });
-app.get('/listar-clientes', (req, res) => {
+app.get('/listar-clientes', exigirLogin, (req, res) => {
     db.all('SELECT * FROM clientes ORDER BY nome ASC', [], (err, rows) => res.json(rows || []));
 });
-app.get('/cliente/:id', (req, res) => {
+app.get('/cliente/:id', exigirLogin, (req, res) => {
     db.get('SELECT * FROM clientes WHERE id = ?', [req.params.id], (err, row) => {
         if (err) return res.status(500).json({ error: err.message });
         if (!row) return res.status(404).json({ error: 'Cliente não encontrado' });
         res.json(row);
     });
 });
-app.post('/atualizar-cliente', (req, res) => {
+app.post('/atualizar-cliente', exigirLogin, (req, res) => {
     const { id, nome, cpf, telefone, endereco, email, data_nascimento } = req.body;
     if (!id || !nome || !cpf || !telefone) return res.json({ success: false, error: 'Campos obrigatórios' });
     db.run(
@@ -147,7 +226,7 @@ app.post('/atualizar-cliente', (req, res) => {
         }
     );
 });
-app.post('/excluir-cliente', (req, res) => {
+app.post('/excluir-cliente', exigirLogin, (req, res) => {
     const { id } = req.body;
     db.run('DELETE FROM clientes WHERE id = ?', [id], function (err) {
         if (err) return res.json({ success: false, error: err.message });
@@ -156,23 +235,23 @@ app.post('/excluir-cliente', (req, res) => {
 });
 
 /* ===== SERVICOS ===== */
-app.post('/salvar-servico', (req, res) => {
+app.post('/salvar-servico', exigirLogin, (req, res) => {
     const { descricao, preco, tempo_estimado } = req.body;
     db.run('INSERT INTO servicos (descricao, preco, tempo_estimado) VALUES (?, ?, ?)',
         [descricao, parseFloat(preco), parseInt(tempo_estimado)],
         () => res.redirect('/servicos.html'));
 });
-app.get('/listar-servicos', (req, res) => {
+app.get('/listar-servicos', exigirLogin, (req, res) => {
     db.all('SELECT * FROM servicos ORDER BY descricao ASC', [], (err, rows) => res.json(rows || []));
 });
-app.get('/servico/:id', (req, res) => {
+app.get('/servico/:id', exigirLogin, (req, res) => {
     db.get('SELECT * FROM servicos WHERE id = ?', [req.params.id], (err, row) => {
         if (err) return res.status(500).json({ error: err.message });
         if (!row) return res.status(404).json({ error: 'Serviço não encontrado' });
         res.json(row);
     });
 });
-app.post('/atualizar-servico', (req, res) => {
+app.post('/atualizar-servico', exigirLogin, (req, res) => {
     const { id, descricao, preco, tempo_estimado } = req.body;
     db.run('UPDATE servicos SET descricao = ?, preco = ?, tempo_estimado = ? WHERE id = ?',
         [descricao, parseFloat(preco), parseInt(tempo_estimado), id],
@@ -181,13 +260,13 @@ app.post('/atualizar-servico', (req, res) => {
             res.json({ success: true });
         });
 });
-app.post('/excluir-servico', (req, res) => {
+app.post('/excluir-servico', exigirLogin, (req, res) => {
     const { id } = req.body;
     db.run('DELETE FROM servicos WHERE id = ?', [id], () => res.json({ success: true }));
 });
 
 /* ===== PROFISSIONAIS ===== */
-app.post('/salvar-profissional', (req, res) => {
+app.post('/salvar-profissional', exigirLogin, (req, res) => {
     const { nome, cpf, telefone_profissional, telefone_pessoal, endereco, especializacao, email } = req.body;
     db.run(
         `INSERT INTO profissionais (nome, cpf, telefone_profissional, telefone_pessoal, endereco, especializacao, email)
@@ -196,17 +275,17 @@ app.post('/salvar-profissional', (req, res) => {
         () => res.redirect('/servicos.html')
     );
 });
-app.get('/listar-profissionais', (req, res) => {
+app.get('/listar-profissionais', exigirLogin, (req, res) => {
     db.all('SELECT * FROM profissionais ORDER BY nome ASC', [], (err, rows) => res.json(rows || []));
 });
-app.get('/profissional/:id', (req, res) => {
+app.get('/profissional/:id', exigirLogin, (req, res) => {
     db.get('SELECT * FROM profissionais WHERE id = ?', [req.params.id], (err, row) => {
         if (err) return res.status(500).json({ error: err.message });
         if (!row) return res.status(404).json({ error: 'Não encontrado' });
         res.json(row);
     });
 });
-app.post('/atualizar-profissional', (req, res) => {
+app.post('/atualizar-profissional', exigirLogin, (req, res) => {
     const { id, nome, cpf, telefone_profissional, telefone_pessoal, endereco, especializacao, email } = req.body;
     if (!id || !nome) return res.json({ success: false });
     db.run(
@@ -218,13 +297,13 @@ app.post('/atualizar-profissional', (req, res) => {
         }
     );
 });
-app.post('/excluir-profissional', (req, res) => {
+app.post('/excluir-profissional', exigirLogin, (req, res) => {
     const { id } = req.body;
     db.run('DELETE FROM profissionais WHERE id = ?', [id], () => res.json({ success: true }));
 });
 
 /* ===== AGENDAMENTOS ===== */
-app.post('/finalizar-agendamento', (req, res) => {
+app.post('/finalizar-agendamento', exigirLogin, (req, res) => {
     const { cliente_id, data, horario, local, responsavel, total, tempo_total, servicos } = req.body;
     const dataHora = horario ? `${data} ${horario}` : data;
     db.run(
@@ -247,7 +326,7 @@ app.post('/finalizar-agendamento', (req, res) => {
     );
 });
 
-app.get('/listar-agendamentos', (req, res) => {
+app.get('/listar-agendamentos', exigirLogin, (req, res) => {
     const status = req.query.status;
     let sql = `SELECT a.*, c.nome as nome_cliente
                FROM agendamentos a
@@ -261,7 +340,7 @@ app.get('/listar-agendamentos', (req, res) => {
     db.all(sql, params, (err, rows) => res.json(rows || []));
 });
 
-app.get('/detalhes-agendamento/:id', (req, res) => {
+app.get('/detalhes-agendamento/:id', exigirLogin, (req, res) => {
     const sql = `SELECT i.preco_cobrado, s.descricao, s.tempo_estimado
                  FROM itens_agendamento i
                  INNER JOIN servicos s ON i.servico_id = s.id
@@ -269,7 +348,7 @@ app.get('/detalhes-agendamento/:id', (req, res) => {
     db.all(sql, [path.basename(req.params.id)], (err, rows) => res.json(rows || []));
 });
 
-app.post('/concluir-agendamento', (req, res) => {
+app.post('/concluir-agendamento', exigirLogin, (req, res) => {
     const { id } = req.body;
     db.run(`UPDATE agendamentos SET status = 'Feito' WHERE id = ?`, [id], function (err) {
         if (err) return res.status(500).json({ success: false });
@@ -277,7 +356,7 @@ app.post('/concluir-agendamento', (req, res) => {
     });
 });
 
-app.post('/atualizar-agendamento', (req, res) => {
+app.post('/atualizar-agendamento', exigirLogin, (req, res) => {
     const { id, data, horario, local, responsavel } = req.body;
     if (!id) return res.json({ success: false });
     const dataHora = horario ? `${String(data).split(' ')[0]} ${horario}` : data;
@@ -291,7 +370,7 @@ app.post('/atualizar-agendamento', (req, res) => {
     );
 });
 
-app.post('/excluir-agendamento', (req, res) => {
+app.post('/excluir-agendamento', exigirLogin, (req, res) => {
     const { id } = req.body;
     db.run('DELETE FROM itens_agendamento WHERE agendamento_id = ?', [id], () => {
         db.run('DELETE FROM agendamentos WHERE id = ?', [id], function (err) {
