@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate">
-<link rel="stylesheet" href="estilo.css?v=12">
+<link rel="stylesheet" href="estilo.css?v=13">
 <title>Advocacia Integrada - Serviços</title>
 <style>
 .form-linha{display:grid;grid-template-columns:1fr;gap:0 16px}
@@ -19,6 +19,12 @@
 .modal-box{background:#fff;border-radius:6px;border-top:3px solid var(--gold-accent);padding:24px;max-width:480px;width:100%;max-height:90vh;overflow:auto}
 .modal-acoes{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
 .aviso-excluir{background:#fff5f5;border:1px solid #fca5a5;border-radius:6px;padding:12px;margin-top:12px;font-size:.9rem;color:#7f1d1d}
+.bloco-publico{margin-top:16px;padding:14px;background:#f8f6f2;border:1px solid #E5E7EB;border-radius:6px;border-left:3px solid var(--gold-accent)}
+.bloco-publico label{display:inline;font-weight:600}
+.bloco-publico .check-row{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.bloco-publico input[type=checkbox]{width:auto;margin:0}
+.badge-pub{display:inline-block;font-size:.7rem;padding:2px 8px;border-radius:4px;background:#f3faf5;color:#14532d;border:1px solid #16a34a;margin-left:6px}
+.badge-priv{display:inline-block;font-size:.7rem;padding:2px 8px;border-radius:4px;background:#f3f4f6;color:#4b5563;border:1px solid #d1d5db;margin-left:6px}
 </style>
 </head>
 <body>
@@ -49,7 +55,7 @@
 </div>
 <div class="card">
 <h2>Cadastrar profissionais</h2>
-<form action="/salvar-profissional" method="POST">
+<form action="/salvar-profissional" method="POST" id="form-prof">
 <div class="form-linha"><div><label for="nome">Nome</label><input type="text" id="nome" name="nome" required></div>
 <div><label for="especializacao">Especialização</label><input type="text" id="especializacao" name="especializacao"></div></div>
 <div class="form-linha"><div><label for="cpf">CPF</label><input type="text" id="cpf" name="cpf"></div>
@@ -57,10 +63,27 @@
 <div class="form-linha"><div><label for="telefone_profissional">Telefone profissional</label><input type="tel" id="telefone_profissional" name="telefone_profissional"></div>
 <div><label for="telefone_pessoal">Telefone pessoal</label><input type="tel" id="telefone_pessoal" name="telefone_pessoal"></div></div>
 <label for="endereco">Endereço</label><input type="text" id="endereco" name="endereco">
+
+<div class="bloco-publico">
+  <div class="check-row">
+    <input type="checkbox" id="publico" name="publico" value="1" onchange="toggleAreaCadastro()">
+    <label for="publico">Exibir na página pública (Áreas de Atuação)</label>
+  </div>
+  <div id="area-cadastro-wrap" style="display:none">
+    <label for="area_publica">Em qual área aparecer?</label>
+    <select id="area_publica" name="area_publica">
+      <option value="">Selecione...</option>
+      <option value="civil">Direito Civil e Contratos</option>
+      <option value="empresarial">Direito Empresarial</option>
+      <option value="trabalho">Direito do Trabalho</option>
+    </select>
+  </div>
+</div>
+
 <div style="margin-top:18px"><button type="submit">Cadastrar</button></div>
 </form>
 <h3 style="margin-top:28px;text-align:center">Profissionais cadastrados</h3>
-<div class="tabela-scroll"><table><thead><tr><th>Nome</th><th>Especialização</th><th>Telefone</th><th></th></tr></thead>
+<div class="tabela-scroll"><table><thead><tr><th>Nome</th><th>Especialização</th><th>Site</th><th></th></tr></thead>
 <tbody id="lista-profissionais"></tbody></table></div>
 </div>
 </div>
@@ -93,6 +116,21 @@
       <label>Tel. profissional</label><input type="text" id="pe-telp">
       <label>Tel. pessoal</label><input type="text" id="pe-tels">
       <label>Endereço</label><input type="text" id="pe-end">
+      <div class="bloco-publico">
+        <div class="check-row">
+          <input type="checkbox" id="pe-publico" onchange="toggleAreaEdit()">
+          <label for="pe-publico">Exibir na página pública</label>
+        </div>
+        <div id="area-edit-wrap" style="display:none">
+          <label for="pe-area">Área no site</label>
+          <select id="pe-area">
+            <option value="">Selecione...</option>
+            <option value="civil">Direito Civil e Contratos</option>
+            <option value="empresarial">Direito Empresarial</option>
+            <option value="trabalho">Direito do Trabalho</option>
+          </select>
+        </div>
+      </div>
     </div>
     <div id="p-excluir" style="display:none" class="aviso-excluir"><p id="p-excluir-txt"></p></div>
     <div class="modal-acoes" id="p-acoes"><button type="button" class="btn-acao" onclick="editarP()">Editar</button><button type="button" class="btn-acao btn-perigo" onclick="excluirP1()">Excluir</button><button type="button" class="btn-acao" onclick="fecharP()">Fechar</button></div>
@@ -105,6 +143,26 @@
 <script src="auth-guard.js"></script>
 <script>
 var servAtual=null, faseS=0, profAtual=null, faseP=0;
+
+var AREA_LABEL={civil:'Civil e Contratos',empresarial:'Empresarial',trabalho:'Trabalho'};
+
+function toggleAreaCadastro(){
+  var on=document.getElementById('publico').checked;
+  document.getElementById('area-cadastro-wrap').style.display=on?'block':'none';
+  if(!on)document.getElementById('area_publica').value='';
+}
+function toggleAreaEdit(){
+  var on=document.getElementById('pe-publico').checked;
+  document.getElementById('area-edit-wrap').style.display=on?'block':'none';
+  if(!on)document.getElementById('pe-area').value='';
+}
+
+document.getElementById('form-prof').addEventListener('submit',function(e){
+  if(document.getElementById('publico').checked && !document.getElementById('area_publica').value){
+    e.preventDefault();
+    alert('Selecione em qual área o profissional deve aparecer no site.');
+  }
+});
 
 function carregarServicos(){
   fetch('/listar-servicos').then(function(r){return r.ok?r.json():[];}).then(function(lista){
@@ -178,7 +236,10 @@ function carregarProfissionais(){
     var c=document.getElementById('lista-profissionais');
     if(!lista.length){c.innerHTML='<tr><td colspan="4" style="text-align:center;color:#666">Nenhum profissional.</td></tr>';return;}
     c.innerHTML=lista.map(function(p){
-      return '<tr><td><strong>'+p.nome+'</strong></td><td>'+(p.especializacao||'—')+'</td><td>'+(p.telefone_profissional||p.telefone_pessoal||'—')+'</td><td><button type="button" class="btn-acao" onclick="verP('+p.id+')">Ver detalhes</button></td></tr>';
+      var site=p.publico==1
+        ? '<span class="badge-pub">Público · '+(AREA_LABEL[p.area_publica]||p.area_publica||'?')+'</span>'
+        : '<span class="badge-priv">Só interno</span>';
+      return '<tr><td><strong>'+p.nome+'</strong></td><td>'+(p.especializacao||'—')+'</td><td>'+site+'</td><td><button type="button" class="btn-acao" onclick="verP('+p.id+')">Ver detalhes</button></td></tr>';
     }).join('');
   }).catch(function(){});
 }
@@ -199,7 +260,10 @@ function mostrarP(){
   document.getElementById('p-acoes').style.display='flex';
   document.getElementById('p-acoes-edit').style.display='none';
   document.getElementById('p-acoes-del').style.display='none';
-  document.getElementById('p-view').innerHTML='<p><strong>Nome:</strong> '+p.nome+'</p><p><strong>Especialização:</strong> '+(p.especializacao||'—')+'</p><p><strong>CPF:</strong> '+(p.cpf||'—')+'</p><p><strong>E-mail:</strong> '+(p.email||'—')+'</p><p><strong>Tel. profissional:</strong> '+(p.telefone_profissional||'—')+'</p><p><strong>Tel. pessoal:</strong> '+(p.telefone_pessoal||'—')+'</p><p><strong>Endereço:</strong> '+(p.endereco||'—')+'</p>';
+  var siteTxt=p.publico==1
+    ? 'Sim — '+(AREA_LABEL[p.area_publica]||p.area_publica||'área não definida')
+    : 'Não (apenas gestão interna)';
+  document.getElementById('p-view').innerHTML='<p><strong>Nome:</strong> '+p.nome+'</p><p><strong>Especialização:</strong> '+(p.especializacao||'—')+'</p><p><strong>CPF:</strong> '+(p.cpf||'—')+'</p><p><strong>E-mail:</strong> '+(p.email||'—')+'</p><p><strong>Tel. profissional:</strong> '+(p.telefone_profissional||'—')+'</p><p><strong>Tel. pessoal:</strong> '+(p.telefone_pessoal||'—')+'</p><p><strong>Endereço:</strong> '+(p.endereco||'—')+'</p><p><strong>Página pública:</strong> '+siteTxt+'</p>';
 }
 function editarP(){
   document.getElementById('p-view').style.display='none';
@@ -215,12 +279,29 @@ function editarP(){
   document.getElementById('pe-telp').value=profAtual.telefone_profissional||'';
   document.getElementById('pe-tels').value=profAtual.telefone_pessoal||'';
   document.getElementById('pe-end').value=profAtual.endereco||'';
+  document.getElementById('pe-publico').checked=profAtual.publico==1;
+  document.getElementById('pe-area').value=profAtual.area_publica||'';
+  toggleAreaEdit();
 }
 function salvarP(){
-  var body={id:profAtual.id,nome:document.getElementById('pe-nome').value.trim(),especializacao:document.getElementById('pe-esp').value.trim(),cpf:document.getElementById('pe-cpf').value.trim(),email:document.getElementById('pe-email').value.trim(),telefone_profissional:document.getElementById('pe-telp').value.trim(),telefone_pessoal:document.getElementById('pe-tels').value.trim(),endereco:document.getElementById('pe-end').value.trim()};
+  var publico=document.getElementById('pe-publico').checked?1:0;
+  var area=document.getElementById('pe-area').value;
+  if(publico && !area)return alert('Selecione a área pública.');
+  var body={
+    id:profAtual.id,
+    nome:document.getElementById('pe-nome').value.trim(),
+    especializacao:document.getElementById('pe-esp').value.trim(),
+    cpf:document.getElementById('pe-cpf').value.trim(),
+    email:document.getElementById('pe-email').value.trim(),
+    telefone_profissional:document.getElementById('pe-telp').value.trim(),
+    telefone_pessoal:document.getElementById('pe-tels').value.trim(),
+    endereco:document.getElementById('pe-end').value.trim(),
+    publico:publico,
+    area_publica:area
+  };
   if(!body.nome)return alert('Nome obrigatório.');
   fetch('/atualizar-profissional',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}).then(function(r){return r.json();}).then(function(res){
-    if(!res.success)return alert('Falha ao salvar.');
+    if(!res.success)return alert(res.error||'Falha ao salvar.');
     Object.assign(profAtual,body); mostrarP(); carregarProfissionais();
   });
 }
