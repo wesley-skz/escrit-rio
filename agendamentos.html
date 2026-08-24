@@ -2,134 +2,135 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <link rel="stylesheet" href="estilo.css">
-    <title>Advocacia Integrada - Lançar Atendimento</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="estilo.css?v=9">
+    <title>Advocacia Integrada - Agendamentos</title>
+    <style>
+        .badge {
+            display: inline-block; padding: 4px 10px; border-radius: 4px;
+            font-size: 0.75rem; font-weight: 600; text-transform: uppercase;
+            background: #fff8f0; color: #92400e; border: 1px solid #f59e0b;
+        }
+        .btn-acao {
+            background: var(--primary-dark); color: var(--gold-accent);
+            border: 1px solid var(--gold-accent); padding: 6px 12px;
+            font-size: 0.75rem; font-weight: 600; border-radius: 4px;
+            cursor: pointer; width: auto; text-transform: uppercase; margin: 2px;
+        }
+        .btn-acao:hover { background: var(--gold-accent); color: var(--primary-dark); }
+        .tabela-scroll { overflow-x: auto; }
+        .nav-privado a { font-size: 0.9rem; }
+        .modal-fundo { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.45);
+            z-index: 100; align-items: center; justify-content: center; padding: 16px; }
+        .modal-fundo.aberto { display: flex; }
+        .modal-box { background: #fff; border-radius: 6px; border-top: 3px solid var(--gold-accent);
+            padding: 24px; max-width: 480px; width: 100%; max-height: 80vh; overflow: auto; }
+    </style>
 </head>
 <body>
     <nav class="nav-privado">
         <a href="painel.html">Geral</a>
         <a href="clientes.html">Clientes</a>
         <a href="servicos.html">Serviços</a>
-        <a href="agendamentos.html" style="border-bottom: 2px solid var(--gold-accent);">Novo Agendamento</a>
-        <a href="consulta_agendamentos.html">Agendamentos</a>
-        <a href="consulta_agendamentos.html">Histórico</a>
+        <a href="novo_agendamento.html">Novo Agendamento</a>
+        <a href="agendamentos.html" style="border-bottom: 2px solid var(--gold-accent);">Agendamentos</a>
+        <a href="historico.html">Histórico</a>
         <a href="index.html" class="nav-login" style="color: #ea580c !important;" title="Sair">Sair</a>
     </nav>
 
     <header class="banner">
-        <h1>Novo Agendamento e Alocação</h1>
-        <p>Vincule atos, estabeleça prazos e selecione o advogado responsável</p>
+        <h1>Agendamentos</h1>
+        <p>Pendências e compromissos ainda a realizar</p>
     </header>
 
     <div class="container">
         <div class="card">
-            <h2>Ordem de Serviço Jurídica</h2>
-
-            <label for="selCliente">Cliente Solicitante:</label>
-            <select id="selCliente"><option value="">Selecione o Cliente...</option></select>
-
-            <label for="txtData">Data e Hora do Compromisso:</label>
-            <input type="text" id="txtData" placeholder="Ex: 15/04/2026 14:00">
-
-            <label for="txtResponsavel">Advogado / Responsável Técnico:</label>
-            <input type="text" id="txtResponsavel" placeholder="Ex: Dr. Carlos Medeiros">
-
-            <hr style="margin: 25px 0; border: 0; border-top: 1px solid #E5E7EB;">
-
-            <h3>Adicionar Atos / Serviços ao Agendamento</h3>
-            <label for="selServico">Selecionar Ato do Catálogo:</label>
-            <select id="selServico" onchange="adicionarCarrinho()"><option value="">Selecione o serviço para adicionar...</option></select>
-        </div>
-
-        <div class="card">
-            <h2>Escopo do Atendimento Marcado</h2>
-            <table>
-                <thead>
-                    <tr><th>Serviço Selecionado</th><th>Tempo Est.</th><th>Honorários</th></tr>
-                </thead>
-                <tbody id="lista-servicos-agendados"></tbody>
-            </table>
-
-            <div style="text-align: right; margin-top: 20px;">
-                <h3 id="txtTotal">Total Geral: R$ 0.00</h3>
-                <h4 id="txtTempoTotal" style="color: var(--gold-accent);">Tempo Total Reservado: 0h</h4>
+            <h2>Pendentes</h2>
+            <p style="text-align:center;color:var(--text-muted);font-size:0.9rem;margin-top:-8px;">
+                Lista do que ainda precisa ser cumprido pela equipe.
+            </p>
+            <div class="tabela-scroll">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th><th>Data / Hora</th><th>Cliente</th>
+                            <th>Responsável</th><th>Local</th><th>Total</th><th>Status</th><th></th>
+                        </tr>
+                    </thead>
+                    <tbody id="lista-pendentes">
+                        <tr><td colspan="8" style="text-align:center;color:#666;">Carregando...</td></tr>
+                    </tbody>
+                </table>
             </div>
-
-            <button type="button" onclick="finalizarAgendamento()" style="margin-top: 15px;">💾 Confirmar e Registrar Agendamento</button>
         </div>
     </div>
 
-    <script>
-        let listaServicosDb = [];
-        let carrinhoServicos = [];
-        let totalGeral = 0;
-        let tempoTotalGeral = 0;
+    <div class="modal-fundo" id="modal" onclick="if(event.target.id==='modal')this.classList.remove('aberto')">
+        <div class="modal-box">
+            <h2 style="text-align:center;margin-top:0;">Detalhes do agendamento</h2>
+            <div id="modal-info"></div>
+            <table style="margin-top:12px;">
+                <thead><tr><th>Serviço</th><th>Tempo</th><th>Honorário</th></tr></thead>
+                <tbody id="modal-itens"></tbody>
+            </table>
+            <button type="button" style="margin-top:16px;" onclick="document.getElementById('modal').classList.remove('aberto')">Fechar</button>
+        </div>
+    </div>
 
-        window.onload = function() {
-            fetch('/listar-clientes').then(res => res.json()).then(dados => {
-                const sel = document.getElementById('selCliente');
-                dados.forEach(c => sel.innerHTML += `<option value="${c.id}">${c.nome}</option>`);
-            });
-
-            fetch('/listar-servicos').then(res => res.json()).then(dados => {
-                listaServicosDb = dados;
-                const sel = document.getElementById('selServico');
-                dados.forEach(s => sel.innerHTML += `<option value="${s.id}">${s.descricao} (R$ ${s.preco.toFixed(2)})</option>`);
-            });
-        };
-
-        function adicionarCarrinho() {
-            const idSel = document.getElementById('selServico').value;
-            if(!idSel) return;
-            const servicoObj = listaServicosDb.find(s => s.id == idSel);
-            if(servicoObj) {
-                carrinhoServicos.push(servicoObj);
-                atualizarTabela();
-            }
-            document.getElementById('selServico').value = "";
-        }
-
-        function atualizarTabela() {
-            const corpo = document.getElementById('lista-servicos-agendados');
-            corpo.innerHTML = "";
-            totalGeral = 0; tempoTotalGeral = 0;
-
-            carrinhoServicos.forEach(s => {
-                totalGeral += s.preco;
-                tempoTotalGeral += s.tempo_estimado;
-                corpo.innerHTML += `<tr><td>${s.descricao}</td><td>${s.tempo_estimado}h</td><td>R$ ${s.preco.toFixed(2)}</td></tr>`;
-            });
-
-            document.getElementById('txtTotal').innerText = `Total Geral: R$ ${totalGeral.toFixed(2)}`;
-            document.getElementById('txtTempoTotal').innerText = `Tempo Total Reservado: ${tempoTotalGeral}h`;
-        }
-
-        function finalizarAgendamento() {
-            const cliente_id = document.getElementById('selCliente').value;
-            const data = document.getElementById('txtData').value;
-            const responsavel = document.getElementById('txtResponsavel').value;
-
-            if(!cliente_id || !data || !responsavel || carrinhoServicos.length === 0) {
-                alert("Preencha todos os dados e adicione ao menos um serviço!");
-                return;
-            }
-
-            const pacote = { cliente_id, data, responsavel, total: totalGeral, tempo_total: tempoTotalGeral, servicos: carrinhoServicos };
-
-            fetch('/finalizar-agendamento', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(pacote)
-            }).then(res => res.json()).then(res => {
-                if(res.success) {
-                    alert("Agendamento jurídico salvo com sucesso!");
-                    window.location.href = 'consulta_agendamentos.html';
-                } else {
-                    alert("Erro ao salvar.");
-                }
-            });
-        }
-    </script>
     <footer class="rodape"><p>&copy; 2026 Advocacia Integrada - Módulo Privado</p></footer>
+    <script>
+        function carregar() {
+            fetch('/listar-agendamentos?status=Pendente').then(r => r.ok ? r.json() : []).then(lista => {
+                const corpo = document.getElementById('lista-pendentes');
+                if (!lista.length) {
+                    corpo.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#666;">Nenhum agendamento pendente.</td></tr>';
+                    return;
+                }
+                corpo.innerHTML = lista.map(a =>
+                    '<tr>'+
+                    '<td>'+a.id+'</td>'+
+                    '<td>'+a.data+(a.horario ? ' '+a.horario : '')+'</td>'+
+                    '<td><strong>'+a.nome_cliente+'</strong></td>'+
+                    '<td>'+a.responsavel+'</td>'+
+                    '<td>'+(a.local||'—')+'</td>'+
+                    '<td>R$ '+parseFloat(a.total).toFixed(2)+'</td>'+
+                    '<td><span class="badge">Pendente</span></td>'+
+                    '<td>'+
+                    '<button type="button" class="btn-acao" onclick="ver('+a.id+')">Ver</button>'+
+                    '<button type="button" class="btn-acao" onclick="concluir('+a.id+')">Concluir</button>'+
+                    '</td></tr>'
+                ).join('');
+            }).catch(() => {
+                document.getElementById('lista-pendentes').innerHTML =
+                    '<tr><td colspan="8" style="text-align:center;color:#666;">Servidor local necessário.</td></tr>';
+            });
+        }
+        function ver(id) {
+            fetch('/listar-agendamentos?status=all').then(r => r.json()).then(lista => {
+                const a = lista.find(x => x.id == id);
+                if (!a) return;
+                document.getElementById('modal-info').innerHTML =
+                    '<p><strong>Cliente:</strong> '+a.nome_cliente+'</p>'+
+                    '<p><strong>Responsável:</strong> '+a.responsavel+'</p>'+
+                    '<p><strong>Data:</strong> '+a.data+'</p>'+
+                    '<p><strong>Local:</strong> '+(a.local||'—')+'</p>'+
+                    '<p><strong>Total:</strong> R$ '+parseFloat(a.total).toFixed(2)+'</p>';
+            });
+            fetch('/detalhes-agendamento/'+id).then(r => r.json()).then(itens => {
+                document.getElementById('modal-itens').innerHTML = itens.map(i =>
+                    '<tr><td>'+i.descricao+'</td><td>'+i.tempo_estimado+' min</td><td>R$ '+parseFloat(i.preco_cobrado).toFixed(2)+'</td></tr>'
+                ).join('') || '<tr><td colspan="3">Sem itens</td></tr>';
+                document.getElementById('modal').classList.add('aberto');
+            });
+        }
+        function concluir(id) {
+            if (!confirm('Marcar este agendamento como concluído (Feito)?')) return;
+            fetch('/concluir-agendamento', {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id })
+            }).then(r => r.json()).then(() => carregar());
+        }
+        carregar();
+    </script>
 </body>
 </html>
