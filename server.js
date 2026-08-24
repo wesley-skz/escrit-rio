@@ -2,6 +2,7 @@ const express = require('express');
 const session = require('express-session');
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
+const fs = require('fs');
 const app = express();
 
 app.use(express.urlencoded({ extended: true }));
@@ -25,10 +26,12 @@ const PAGINAS_PRIVADAS = [
     'novo_agendamento.html',
     'agendamentos.html',
     'historico.html',
-    'consulta_agendamentos.html'
+    'consulta_agendamentos.html',
+    'relatorios.html'
 ];
 
 const AREAS_PUBLICAS = ['civil', 'empresarial', 'trabalho'];
+const DB_PATH = path.join(__dirname, 'advocacia.db');
 
 function exigirLogin(req, res, next) {
     if (req.session && req.session.logado) return next();
@@ -76,7 +79,7 @@ app.use(express.static(__dirname, {
     }
 }));
 
-const db = new sqlite3.Database(path.join(__dirname, 'advocacia.db'), (err) => {
+const db = new sqlite3.Database(DB_PATH, (err) => {
     if (err) console.error("Erro ao conectar ao SQLite:", err.message);
     else console.log("💾 Banco de dados 'advocacia.db' conectado com sucesso.");
 });
@@ -210,6 +213,61 @@ app.get('/api/sessao', (req, res) => {
     res.status(401).json({ logado: false });
 });
 
+/* ===== BACKUP ===== */
+app.get('/backup-db', exigirLogin, (req, res) => {
+    if (!fs.existsSync(DB_PATH)) return res.status(404).send('Banco não encontrado.');
+    const nome = 'advocacia-backup-' + new Date().toISOString().slice(0, 10) + '.db';
+    res.download(DB_PATH, nome);
+});
+
+app.get('/backup-json', exigirLogin, (req, res) => {
+    const tabelas = ['clientes', 'servicos', 'profissionais', 'agendamentos', 'itens_agendamento', 'usuarios'];
+    const out = { gerado_em: new Date().toISOString(), dados: {} };
+    let pendentes = tabelas.length;
+    tabelas.forEach(t => {
+        db.all('SELECT * FROM ' + t, [], (err, rows) => {
+            out.dados[t] = err ? [] : (rows || []);
+            pendentes--;
+            if (pendentes === 0) {
+                res.setHeader('Content-Disposition', 'attachment; filename=advocacia-backup-' + new Date().toISOString().slice(0, 10) + '.json');
+                res.json(out);
+            }
+        });
+    });
+});
+
+/* ===== RELATÓRIO ===== */
+app.get('/api/relatorio', exigirLogin, (req, res) => {
+    const resultado = {
+        clientes: 0, servicos: 0, profissionais: 0, profissionaisPublicos: 0,
+        agendamentos: 0, pendentes: 0, concluidos: 0, totalHonorarios: 0, ultimos: []
+    };
+    let passos = 6;
+    function fim() {
+        passos--;
+        if (passos === 0) res.json(resultado);
+    }
+    db.get('SELECT COUNT(*) as n FROM clientes', [], (e, r) => { resultado.clientes = r ? r.n : 0; fim(); });
+    db.get('SELECT COUNT(*) as n FROM servicos', [], (e, r) => { resultado.servicos = r ? r.n : 0; fim(); });
+    db.get('SELECT COUNT(*) as n FROM profissionais', [], (e, r) => { resultado.profissionais = r ? r.n : 0; fim(); });
+    db.get('SELECT COUNT(*) as n FROM profissionais WHERE IFNULL(publico,0)=1', [], (e, r) => { resultado.profissionaisPublicos = r ? r.n : 0; fim(); });
+    db.all(`SELECT IFNULL(status,'Pendente') as st, COUNT(*) as n, SUM(total) as soma FROM agendamentos GROUP BY IFNULL(status,'Pendente')`, [], (e, rows) => {
+        (rows || []).forEach(row => {
+            resultado.agendamentos += row.n;
+            resultado.totalHonorarios += parseFloat(row.soma || 0);
+            if (row.st === 'Feito') resultado.concluidos = row.n;
+            else resultado.pendentes += row.n;
+        });
+        fim();
+    });
+    db.all(`SELECT a.id, a.data, a.status, a.total, c.nome as nome_cliente
+            FROM agendamentos a INNER JOIN clientes c ON a.cliente_id = c.id
+            ORDER BY a.id DESC LIMIT 10`, [], (e, rows) => {
+        resultado.ultimos = rows || [];
+        fim();
+    });
+});
+
 /* ===== CLIENTES ===== */
 app.post('/salvar-cliente', exigirLogin, (req, res) => {
     const { nome, cpf, telefone, endereco, email, data_nascimento } = req.body;
@@ -300,7 +358,6 @@ app.get('/listar-profissionais', exigirLogin, (req, res) => {
     db.all('SELECT * FROM profissionais ORDER BY nome ASC', [], (err, rows) => res.json(rows || []));
 });
 
-/* Lista pública — sem login; só dados seguros */
 app.get('/listar-profissionais-publicos', (req, res) => {
     db.all(
         `SELECT id, nome, telefone_profissional, especializacao, email, area_publica
