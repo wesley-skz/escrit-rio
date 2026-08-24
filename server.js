@@ -100,6 +100,13 @@ db.serialize(() => {
         servico_id INTEGER NOT NULL,
         preco_cobrado REAL NOT NULL
     )`);
+
+    db.run(`CREATE TABLE IF NOT EXISTS chat_colegas (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        autor TEXT NOT NULL,
+        mensagem TEXT NOT NULL,
+        criado_em TEXT DEFAULT (datetime('now', 'localtime'))
+    )`);
 });
 
 app.post('/autenticar', (req, res) => {
@@ -218,6 +225,115 @@ app.post('/concluir-agendamento', (req, res) => {
     db.run(`UPDATE agendamentos SET status = 'Feito' WHERE id = ?`, [id], function (err) {
         if (err) return res.status(500).json({ success: false });
         res.json({ success: true });
+    });
+});
+
+/* Fórum / chat colegas */
+app.post('/salvar-chat-colegas', (req, res) => {
+    const autor = String(req.body.autor || 'Colega').trim().slice(0, 80);
+    const mensagem = String(req.body.mensagem || '').trim().slice(0, 500);
+    if (!mensagem) return res.json({ success: false });
+    db.run('INSERT INTO chat_colegas (autor, mensagem) VALUES (?, ?)', [autor, mensagem], function (err) {
+        if (err) return res.json({ success: false });
+        res.json({ success: true, id: this.lastID });
+    });
+});
+
+app.get('/listar-chat-colegas', (req, res) => {
+    db.all('SELECT autor, mensagem, criado_em FROM chat_colegas ORDER BY id ASC LIMIT 100', [], (err, rows) => {
+        res.json(rows || []);
+    });
+});
+
+/* Assistente (consulta dados + FAQ sistema + orientações gerais) */
+function responderAssistente(pergunta, ctx) {
+    const p = (pergunta || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+
+    if (/quantos? clientes|total de clientes|clientes cadastrados/.test(p)) {
+        return `Há <strong>${ctx.nClientes}</strong> cliente(s) cadastrado(s) no sistema.` +
+            (ctx.clientesNomes ? `<br>Exemplos: ${ctx.clientesNomes}` : '');
+    }
+    if (/quantos? servicos|servicos cadastrados|catalogo|honorarios/.test(p)) {
+        return `Há <strong>${ctx.nServicos}</strong> serviço(s) no catálogo.` +
+            (ctx.servicosLista ? `<br>${ctx.servicosLista}` : '');
+    }
+    if (/quantos? profissionais|equipe|advogados cadastrados/.test(p)) {
+        return `Há <strong>${ctx.nProfissionais}</strong> profissional(is) cadastrado(s).` +
+            (ctx.profNomes ? `<br>Equipe: ${ctx.profNomes}` : '');
+    }
+    if (/agendamento.*pendente|pendencias|o que falta|pendente/.test(p)) {
+        return `Existem <strong>${ctx.nPendentes}</strong> agendamento(s) pendente(s) e <strong>${ctx.nFeitos}</strong> concluído(s).` +
+            `<br>Veja a lista em <em>Agendamentos</em> e use <strong>Concluir</strong> para enviar ao Histórico.`;
+    }
+    if (/como.*(cadastrar|criar).*cliente/.test(p)) {
+        return `Em <strong>Clientes</strong>: preencha nome/razão social, CPF/CNPJ, telefone (obrigatórios) e, se quiser, e-mail, endereço e data de nascimento. Depois clique em <em>Salvar Ficha do Cliente</em>.`;
+    }
+    if (/como.*(cadastrar|criar).*servico/.test(p)) {
+        return `Em <strong>Serviços</strong>: informe a descrição, o honorário base (R$) e o prazo em minutos. Clique em <em>Inserir no Catálogo</em>. Profissionais são cadastrados na mesma página, na seção inferior.`;
+    }
+    if (/como.*(agendar|novo agendamento|marcar)/.test(p)) {
+        return `Em <strong>Novo Agendamento</strong>: escolha cliente e profissional, data, horário e local; adicione atos do catálogo e confirme. O registro fica em <em>Agendamentos</em> como Pendente.`;
+    }
+    if (/como.*concluir|marcar como feito|historico/.test(p)) {
+        return `Em <strong>Agendamentos</strong>, clique em <em>Concluir</em> no item pendente. Ele passa a status <strong>Feito</strong> e aparece em <em>Histórico</em>.`;
+    }
+    if (/login|senha|acessar|entrar/.test(p)) {
+        return `Acesso: usuário <strong>wesleygb</strong> e senha configurada no servidor. O login só funciona com <code>npm start</code> (não só pelo GitHub Pages).`;
+    }
+    if (/forum|ouvidoria|chat|colegas/.test(p)) {
+        return `Neste <strong>Fórum</strong>: à esquerda você troca mensagens com a equipe; à direita este assistente responde dúvidas do sistema e orientações gerais.`;
+    }
+    if (/prazo processual|prazo de recurso|contagem de prazo/.test(p)) {
+        return `Orientação geral: prazos processuais costumam contar em dias úteis ou corridos conforme a lei e o tipo de ato (ex.: CPC). Confira sempre o tipo de prazo no processo e no tribunal competente. Isto <strong>não substitui</strong> consulta ao processo nem parecer formal.`;
+    }
+    if (/honorario|tabela de honorarios|oab/.test(p)) {
+        return `Honorários podem seguir tabela da OAB do estado, contrato ou tabela interna do escritório. No sistema, o valor base de cada ato fica em <strong>Serviços</strong> e é usado ao montar o agendamento.`;
+    }
+    if (/cliente nao aparece|nao lista|lista vazia/.test(p)) {
+        return `Listas vazias costumam indicar: (1) nada cadastrado ainda, ou (2) servidor parado. Rode <code>npm start</code> e atualize a página. Cadastros feitos só no Pages estático não gravam no banco.`;
+    }
+    if (/ajuda|o que voce faz|comandos|menu/.test(p)) {
+        return `Posso informar totais de clientes, serviços, profissionais e agendamentos; explicar como usar Clientes, Serviços, Novo Agendamento, Agendamentos e Histórico; e dar orientações gerais (prazos, honorários) — sempre com ressalva de que não são aconselhamento jurídico formal.`;
+    }
+
+    return `Recebi: “${pergunta}”.<br><br>` +
+        `Resumo do sistema agora: <strong>${ctx.nClientes}</strong> clientes, <strong>${ctx.nServicos}</strong> serviços, <strong>${ctx.nProfissionais}</strong> profissionais, <strong>${ctx.nPendentes}</strong> agendamentos pendentes.<br><br>` +
+        `Pergunte, por exemplo: quantos clientes temos? como cadastrar serviço? como concluir agendamento? o que é prazo processual?<br><br>` +
+        `<em>Respostas gerais de advocacia são apenas apoio interno e não substituem análise do caso concreto.</em>`;
+}
+
+app.post('/assistente', (req, res) => {
+    const pergunta = String(req.body.pergunta || '').trim();
+    if (!pergunta) return res.json({ resposta: 'Digite uma pergunta.' });
+
+    const ctx = { nClientes: 0, nServicos: 0, nProfissionais: 0, nPendentes: 0, nFeitos: 0,
+        clientesNomes: '', servicosLista: '', profNomes: '' };
+
+    db.get('SELECT COUNT(*) as n FROM clientes', [], (e1, r1) => {
+        ctx.nClientes = r1 ? r1.n : 0;
+        db.get('SELECT COUNT(*) as n FROM servicos', [], (e2, r2) => {
+            ctx.nServicos = r2 ? r2.n : 0;
+            db.get('SELECT COUNT(*) as n FROM profissionais', [], (e3, r3) => {
+                ctx.nProfissionais = r3 ? r3.n : 0;
+                db.get(`SELECT COUNT(*) as n FROM agendamentos WHERE IFNULL(status,'Pendente')='Pendente'`, [], (e4, r4) => {
+                    ctx.nPendentes = r4 ? r4.n : 0;
+                    db.get(`SELECT COUNT(*) as n FROM agendamentos WHERE status='Feito'`, [], (e5, r5) => {
+                        ctx.nFeitos = r5 ? r5.n : 0;
+                        db.all('SELECT nome FROM clientes ORDER BY nome LIMIT 5', [], (e6, rowsC) => {
+                            ctx.clientesNomes = (rowsC || []).map(x => x.nome).join(', ');
+                            db.all('SELECT descricao, preco FROM servicos ORDER BY descricao LIMIT 6', [], (e7, rowsS) => {
+                                ctx.servicosLista = (rowsS || []).map(s => `• ${s.descricao} (R$ ${Number(s.preco).toFixed(2)})`).join('<br>');
+                                db.all('SELECT nome FROM profissionais ORDER BY nome LIMIT 8', [], (e8, rowsP) => {
+                                    ctx.profNomes = (rowsP || []).map(x => x.nome).join(', ');
+                                    const resposta = responderAssistente(pergunta, ctx);
+                                    res.json({ resposta });
+                                });
+                            });
+                        });
+                    });
+                });
+            });
+        });
     });
 });
 
