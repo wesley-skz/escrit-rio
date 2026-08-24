@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="estilo.css?v=5">
+    <link rel="stylesheet" href="estilo.css?v=13">
     <title>Advocacia Integrada - Áreas de Atuação</title>
 </head>
 <body>
@@ -26,31 +26,8 @@
             <h2>Direito Civil e Contratos</h2>
             <p class="area-desc">Gestão patrimonial, obrigações, confecção e análise de minutas e acordos comerciais. Atuamos na prevenção de conflitos e na defesa dos interesses civis do cliente em todas as instâncias.</p>
             <h3 class="prof-titulo">Profissionais da Área</h3>
-            <div class="grid-profissionais">
-                <div class="card-prof">
-                    <img class="prof-foto" src="https://randomuser.me/api/portraits/women/44.jpg" alt="Dra. Renata Oliveira">
-                    <div class="prof-info">
-                        <strong>Dra. Renata Oliveira</strong>
-                        <span>(11) 4004-1201</span>
-                        <span>renata@advocaciaintegrada.adv.br</span>
-                    </div>
-                </div>
-                <div class="card-prof">
-                    <img class="prof-foto" src="https://randomuser.me/api/portraits/men/32.jpg" alt="Dr. Carlos Mendes">
-                    <div class="prof-info">
-                        <strong>Dr. Carlos Mendes</strong>
-                        <span>(11) 4004-1202</span>
-                        <span>carlos@advocaciaintegrada.adv.br</span>
-                    </div>
-                </div>
-                <div class="card-prof">
-                    <img class="prof-foto" src="https://randomuser.me/api/portraits/women/65.jpg" alt="Dra. Laura Ferreira">
-                    <div class="prof-info">
-                        <strong>Dra. Laura Ferreira</strong>
-                        <span>(11) 4004-1203</span>
-                        <span>laura@advocaciaintegrada.adv.br</span>
-                    </div>
-                </div>
+            <div class="grid-profissionais" id="grid-civil">
+                <p class="area-vazio" style="color:var(--text-muted);font-size:0.9rem;">Carregando equipe...</p>
             </div>
         </div>
 
@@ -58,31 +35,8 @@
             <h2>Direito Empresarial</h2>
             <p class="area-desc">Consultoria societária preventiva, blindagem patrimonial, fusões e reestruturações. Orientamos empresas com foco em segurança jurídica e crescimento sustentável.</p>
             <h3 class="prof-titulo">Profissionais da Área</h3>
-            <div class="grid-profissionais">
-                <div class="card-prof">
-                    <img class="prof-foto" src="https://randomuser.me/api/portraits/men/52.jpg" alt="Dr. André Souza">
-                    <div class="prof-info">
-                        <strong>Dr. André Souza</strong>
-                        <span>(11) 4004-1211</span>
-                        <span>andre@advocaciaintegrada.adv.br</span>
-                    </div>
-                </div>
-                <div class="card-prof">
-                    <img class="prof-foto" src="https://randomuser.me/api/portraits/women/33.jpg" alt="Dra. Marina Prado">
-                    <div class="prof-info">
-                        <strong>Dra. Marina Prado</strong>
-                        <span>(11) 4004-1212</span>
-                        <span>marina@advocaciaintegrada.adv.br</span>
-                    </div>
-                </div>
-                <div class="card-prof">
-                    <img class="prof-foto" src="https://randomuser.me/api/portraits/men/75.jpg" alt="Dr. Ricardo Holanda">
-                    <div class="prof-info">
-                        <strong>Dr. Ricardo Holanda</strong>
-                        <span>(11) 4004-1213</span>
-                        <span>ricardo@advocaciaintegrada.adv.br</span>
-                    </div>
-                </div>
+            <div class="grid-profissionais" id="grid-empresarial">
+                <p class="area-vazio" style="color:var(--text-muted);font-size:0.9rem;">Carregando equipe...</p>
             </div>
         </div>
 
@@ -90,31 +44,8 @@
             <h2>Direito do Trabalho</h2>
             <p class="area-desc">Defesa técnica patronal e garantia de direitos do trabalhador, com foco em auditorias, compliance trabalhista e atuação contenciosa especializada.</p>
             <h3 class="prof-titulo">Profissionais da Área</h3>
-            <div class="grid-profissionais">
-                <div class="card-prof">
-                    <img class="prof-foto" src="https://randomuser.me/api/portraits/women/68.jpg" alt="Dra. Beatriz Nunes">
-                    <div class="prof-info">
-                        <strong>Dra. Beatriz Nunes</strong>
-                        <span>(11) 4004-1221</span>
-                        <span>beatriz@advocaciaintegrada.adv.br</span>
-                    </div>
-                </div>
-                <div class="card-prof">
-                    <img class="prof-foto" src="https://randomuser.me/api/portraits/men/46.jpg" alt="Dr. Felipe Torres">
-                    <div class="prof-info">
-                        <strong>Dr. Felipe Torres</strong>
-                        <span>(11) 4004-1222</span>
-                        <span>felipe@advocaciaintegrada.adv.br</span>
-                    </div>
-                </div>
-                <div class="card-prof">
-                    <img class="prof-foto" src="https://randomuser.me/api/portraits/women/21.jpg" alt="Dra. Juliana Costa">
-                    <div class="prof-info">
-                        <strong>Dra. Juliana Costa</strong>
-                        <span>(11) 4004-1223</span>
-                        <span>juliana@advocaciaintegrada.adv.br</span>
-                    </div>
-                </div>
+            <div class="grid-profissionais" id="grid-trabalho">
+                <p class="area-vazio" style="color:var(--text-muted);font-size:0.9rem;">Carregando equipe...</p>
             </div>
         </div>
 
@@ -131,5 +62,61 @@
     <footer class="rodape">
         <p>&copy; 2026 Advocacia Integrada</p>
     </footer>
+
+    <script>
+    (function () {
+        var fotos = [
+            'https://randomuser.me/api/portraits/women/44.jpg',
+            'https://randomuser.me/api/portraits/men/32.jpg',
+            'https://randomuser.me/api/portraits/women/65.jpg',
+            'https://randomuser.me/api/portraits/men/52.jpg',
+            'https://randomuser.me/api/portraits/women/33.jpg',
+            'https://randomuser.me/api/portraits/men/75.jpg',
+            'https://randomuser.me/api/portraits/women/68.jpg',
+            'https://randomuser.me/api/portraits/men/46.jpg',
+            'https://randomuser.me/api/portraits/women/21.jpg'
+        ];
+
+        function card(p, i) {
+            var foto = fotos[i % fotos.length];
+            var tel = p.telefone_profissional || '—';
+            var email = p.email || '—';
+            return '<div class="card-prof">' +
+                '<img class="prof-foto" src="' + foto + '" alt="' + (p.nome || '') + '">' +
+                '<div class="prof-info">' +
+                '<strong>' + (p.nome || '') + '</strong>' +
+                (p.especializacao ? '<span>' + p.especializacao + '</span>' : '') +
+                '<span>' + tel + '</span>' +
+                '<span>' + email + '</span>' +
+                '</div></div>';
+        }
+
+        function preencher(id, lista) {
+            var el = document.getElementById(id);
+            if (!lista.length) {
+                el.innerHTML = '<p style="color:var(--text-muted);font-size:0.9rem;">Nenhum profissional cadastrado nesta área no momento.</p>';
+                return;
+            }
+            el.innerHTML = lista.map(card).join('');
+        }
+
+        fetch('/listar-profissionais-publicos')
+            .then(function (r) { return r.ok ? r.json() : []; })
+            .then(function (lista) {
+                var civil = lista.filter(function (p) { return p.area_publica === 'civil'; });
+                var emp = lista.filter(function (p) { return p.area_publica === 'empresarial'; });
+                var trab = lista.filter(function (p) { return p.area_publica === 'trabalho'; });
+                preencher('grid-civil', civil);
+                preencher('grid-empresarial', emp);
+                preencher('grid-trabalho', trab);
+            })
+            .catch(function () {
+                ['grid-civil', 'grid-empresarial', 'grid-trabalho'].forEach(function (id) {
+                    document.getElementById(id).innerHTML =
+                        '<p style="color:var(--text-muted);font-size:0.9rem;">Equipe disponível quando o sistema estiver online.</p>';
+                });
+            });
+    })();
+    </script>
 </body>
 </html>

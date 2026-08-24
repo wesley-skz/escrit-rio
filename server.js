@@ -28,6 +28,8 @@ const PAGINAS_PRIVADAS = [
     'consulta_agendamentos.html'
 ];
 
+const AREAS_PUBLICAS = ['civil', 'empresarial', 'trabalho'];
+
 function exigirLogin(req, res, next) {
     if (req.session && req.session.logado) return next();
     if (req.xhr || (req.headers.accept && req.headers.accept.indexOf('json') !== -1)) {
@@ -44,7 +46,16 @@ function headersSemCache(res) {
     });
 }
 
-// Bloqueia páginas privadas sem sessão (antes do static)
+function normalizarPublico(v) {
+    return (v === true || v === 1 || v === '1' || v === 'on' || v === 'sim') ? 1 : 0;
+}
+
+function normalizarArea(area, publico) {
+    if (!publico) return '';
+    const a = String(area || '').toLowerCase().trim();
+    return AREAS_PUBLICAS.includes(a) ? a : '';
+}
+
 app.use((req, res, next) => {
     const file = path.basename(req.path);
     if (PAGINAS_PRIVADAS.includes(file)) {
@@ -134,8 +145,12 @@ db.serialize(() => {
         telefone_pessoal TEXT,
         endereco TEXT,
         especializacao TEXT,
-        email TEXT
+        email TEXT,
+        publico INTEGER DEFAULT 0,
+        area_publica TEXT DEFAULT ''
     )`);
+    db.run(`ALTER TABLE profissionais ADD COLUMN publico INTEGER DEFAULT 0`, () => {});
+    db.run(`ALTER TABLE profissionais ADD COLUMN area_publica TEXT DEFAULT ''`, () => {});
 
     db.run(`CREATE TABLE IF NOT EXISTS agendamentos (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -195,7 +210,7 @@ app.get('/api/sessao', (req, res) => {
     res.status(401).json({ logado: false });
 });
 
-/* ===== CLIENTES (protegidos) ===== */
+/* ===== CLIENTES ===== */
 app.post('/salvar-cliente', exigirLogin, (req, res) => {
     const { nome, cpf, telefone, endereco, email, data_nascimento } = req.body;
     db.run(
@@ -267,17 +282,36 @@ app.post('/excluir-servico', exigirLogin, (req, res) => {
 
 /* ===== PROFISSIONAIS ===== */
 app.post('/salvar-profissional', exigirLogin, (req, res) => {
-    const { nome, cpf, telefone_profissional, telefone_pessoal, endereco, especializacao, email } = req.body;
+    const { nome, cpf, telefone_profissional, telefone_pessoal, endereco, especializacao, email, area_publica } = req.body;
+    const publico = normalizarPublico(req.body.publico);
+    const area = normalizarArea(area_publica, publico);
+    if (publico && !area) {
+        return res.send(`<script>alert('Selecione a área pública (Civil, Empresarial ou Trabalho).'); window.location.href='/servicos.html';</script>`);
+    }
     db.run(
-        `INSERT INTO profissionais (nome, cpf, telefone_profissional, telefone_pessoal, endereco, especializacao, email)
-         VALUES (?, ?, ?, ?, ?, ?, ?)`,
-        [nome, cpf || '', telefone_profissional || '', telefone_pessoal || '', endereco || '', especializacao || '', email || ''],
+        `INSERT INTO profissionais (nome, cpf, telefone_profissional, telefone_pessoal, endereco, especializacao, email, publico, area_publica)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [nome, cpf || '', telefone_profissional || '', telefone_pessoal || '', endereco || '', especializacao || '', email || '', publico, area],
         () => res.redirect('/servicos.html')
     );
 });
+
 app.get('/listar-profissionais', exigirLogin, (req, res) => {
     db.all('SELECT * FROM profissionais ORDER BY nome ASC', [], (err, rows) => res.json(rows || []));
 });
+
+/* Lista pública — sem login; só dados seguros */
+app.get('/listar-profissionais-publicos', (req, res) => {
+    db.all(
+        `SELECT id, nome, telefone_profissional, especializacao, email, area_publica
+         FROM profissionais
+         WHERE IFNULL(publico, 0) = 1 AND IFNULL(area_publica, '') != ''
+         ORDER BY nome ASC`,
+        [],
+        (err, rows) => res.json(rows || [])
+    );
+});
+
 app.get('/profissional/:id', exigirLogin, (req, res) => {
     db.get('SELECT * FROM profissionais WHERE id = ?', [req.params.id], (err, row) => {
         if (err) return res.status(500).json({ error: err.message });
@@ -285,18 +319,23 @@ app.get('/profissional/:id', exigirLogin, (req, res) => {
         res.json(row);
     });
 });
+
 app.post('/atualizar-profissional', exigirLogin, (req, res) => {
-    const { id, nome, cpf, telefone_profissional, telefone_pessoal, endereco, especializacao, email } = req.body;
+    const { id, nome, cpf, telefone_profissional, telefone_pessoal, endereco, especializacao, email, area_publica } = req.body;
     if (!id || !nome) return res.json({ success: false });
+    const publico = normalizarPublico(req.body.publico);
+    const area = normalizarArea(area_publica, publico);
+    if (publico && !area) return res.json({ success: false, error: 'Selecione a área pública' });
     db.run(
-        `UPDATE profissionais SET nome=?, cpf=?, telefone_profissional=?, telefone_pessoal=?, endereco=?, especializacao=?, email=? WHERE id=?`,
-        [nome, cpf || '', telefone_profissional || '', telefone_pessoal || '', endereco || '', especializacao || '', email || '', id],
+        `UPDATE profissionais SET nome=?, cpf=?, telefone_profissional=?, telefone_pessoal=?, endereco=?, especializacao=?, email=?, publico=?, area_publica=? WHERE id=?`,
+        [nome, cpf || '', telefone_profissional || '', telefone_pessoal || '', endereco || '', especializacao || '', email || '', publico, area, id],
         function (err) {
             if (err) return res.json({ success: false });
             res.json({ success: true });
         }
     );
 });
+
 app.post('/excluir-profissional', exigirLogin, (req, res) => {
     const { id } = req.body;
     db.run('DELETE FROM profissionais WHERE id = ?', [id], () => res.json({ success: true }));
