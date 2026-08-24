@@ -1,11 +1,14 @@
 /**
  * Seed de dados fictícios — Advocacia Integrada
- * No Codespace ou local:
+ *
+ * No Codespace ou na máquina local:
+ *   git pull origin main
+ *   npm install
  *   npm run seed
- *   (ou: node seed.js)
+ *   npm start
  *
  * Insere: 19 clientes, 16 serviços, 12 profissionais, 12 agendamentos
- * Limpa antes os dados operacionais (não apaga usuarios).
+ * (apaga antes os dados operacionais; não apaga usuarios)
  */
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
@@ -85,9 +88,9 @@ const agendamentosPlan = [
   [12, '2026-09-09 14:30', '14:30', 'Fórum', 9, 6, 'Feito'],
 ];
 
-function run(sql, params = []) {
-  return new Promise((resolve, reject) => {
-    db.run(sql, params, function (err) {
+function run(sql, params) {
+  return new Promise(function (resolve, reject) {
+    db.run(sql, params || [], function (err) {
       if (err) reject(err);
       else resolve(this);
     });
@@ -95,23 +98,13 @@ function run(sql, params = []) {
 }
 
 async function main() {
-  console.log('🌱 Seed em', dbPath);
+  console.log('🌱 Populando banco:', dbPath);
 
-  await run(`CREATE TABLE IF NOT EXISTS clientes (
-    id INTEGER PRIMARY KEY AUTOINCREMENT, nome TEXT NOT NULL, cpf TEXT NOT NULL, telefone TEXT NOT NULL,
-    endereco TEXT, email TEXT, data_nascimento TEXT)`);
-  await run(`CREATE TABLE IF NOT EXISTS servicos (
-    id INTEGER PRIMARY KEY AUTOINCREMENT, descricao TEXT NOT NULL, preco REAL NOT NULL, tempo_estimado INTEGER NOT NULL)`);
-  await run(`CREATE TABLE IF NOT EXISTS profissionais (
-    id INTEGER PRIMARY KEY AUTOINCREMENT, nome TEXT NOT NULL, cpf TEXT, telefone_profissional TEXT,
-    telefone_pessoal TEXT, endereco TEXT, especializacao TEXT, email TEXT)`);
-  await run(`CREATE TABLE IF NOT EXISTS agendamentos (
-    id INTEGER PRIMARY KEY AUTOINCREMENT, data TEXT NOT NULL, horario TEXT, local TEXT,
-    cliente_id INTEGER NOT NULL, responsavel TEXT NOT NULL, total REAL NOT NULL,
-    tempo_total INTEGER NOT NULL, status TEXT DEFAULT 'Pendente')`);
-  await run(`CREATE TABLE IF NOT EXISTS itens_agendamento (
-    id INTEGER PRIMARY KEY AUTOINCREMENT, agendamento_id INTEGER NOT NULL,
-    servico_id INTEGER NOT NULL, preco_cobrado REAL NOT NULL)`);
+  await run('CREATE TABLE IF NOT EXISTS clientes (id INTEGER PRIMARY KEY AUTOINCREMENT, nome TEXT NOT NULL, cpf TEXT NOT NULL, telefone TEXT NOT NULL, endereco TEXT, email TEXT, data_nascimento TEXT)');
+  await run('CREATE TABLE IF NOT EXISTS servicos (id INTEGER PRIMARY KEY AUTOINCREMENT, descricao TEXT NOT NULL, preco REAL NOT NULL, tempo_estimado INTEGER NOT NULL)');
+  await run('CREATE TABLE IF NOT EXISTS profissionais (id INTEGER PRIMARY KEY AUTOINCREMENT, nome TEXT NOT NULL, cpf TEXT, telefone_profissional TEXT, telefone_pessoal TEXT, endereco TEXT, especializacao TEXT, email TEXT)');
+  await run('CREATE TABLE IF NOT EXISTS agendamentos (id INTEGER PRIMARY KEY AUTOINCREMENT, data TEXT NOT NULL, horario TEXT, local TEXT, cliente_id INTEGER NOT NULL, responsavel TEXT NOT NULL, total REAL NOT NULL, tempo_total INTEGER NOT NULL, status TEXT DEFAULT \'Pendente\')');
+  await run('CREATE TABLE IF NOT EXISTS itens_agendamento (id INTEGER PRIMARY KEY AUTOINCREMENT, agendamento_id INTEGER NOT NULL, servico_id INTEGER NOT NULL, preco_cobrado REAL NOT NULL)');
 
   await run('DELETE FROM itens_agendamento');
   await run('DELETE FROM agendamentos');
@@ -119,39 +112,35 @@ async function main() {
   await run('DELETE FROM servicos');
   await run('DELETE FROM profissionais');
 
-  for (const c of clientes) {
-    await run('INSERT INTO clientes (nome, cpf, telefone, endereco, email, data_nascimento) VALUES (?,?,?,?,?,?)', c);
+  for (var i = 0; i < clientes.length; i++) {
+    await run('INSERT INTO clientes (nome, cpf, telefone, endereco, email, data_nascimento) VALUES (?,?,?,?,?,?)', clientes[i]);
   }
   console.log('✅', clientes.length, 'clientes');
 
-  for (const s of servicos) {
-    await run('INSERT INTO servicos (descricao, preco, tempo_estimado) VALUES (?,?,?)', s);
+  for (var j = 0; j < servicos.length; j++) {
+    await run('INSERT INTO servicos (descricao, preco, tempo_estimado) VALUES (?,?,?)', servicos[j]);
   }
   console.log('✅', servicos.length, 'serviços');
 
-  for (const p of profissionais) {
-    await run(
-      `INSERT INTO profissionais (nome, cpf, telefone_profissional, telefone_pessoal, endereco, especializacao, email)
-       VALUES (?,?,?,?,?,?,?)`,
-      p
-    );
+  for (var k = 0; k < profissionais.length; k++) {
+    await run('INSERT INTO profissionais (nome, cpf, telefone_profissional, telefone_pessoal, endereco, especializacao, email) VALUES (?,?,?,?,?,?,?)', profissionais[k]);
   }
   console.log('✅', profissionais.length, 'profissionais');
 
-  for (const a of agendamentosPlan) {
-    const clienteId = a[0] + 1;
-    const data = a[1];
-    const horario = a[2];
-    const local = a[3];
-    const profNome = profissionais[a[4]][0];
-    const servicoId = a[5] + 1;
-    const status = a[6];
-    const preco = servicos[a[5]][1];
-    const tempo = servicos[a[5]][2];
+  for (var m = 0; m < agendamentosPlan.length; m++) {
+    var a = agendamentosPlan[m];
+    var clienteId = a[0] + 1;
+    var data = a[1];
+    var horario = a[2];
+    var local = a[3];
+    var profNome = profissionais[a[4]][0];
+    var servicoId = a[5] + 1;
+    var status = a[6];
+    var preco = servicos[a[5]][1];
+    var tempo = servicos[a[5]][2];
 
-    const r = await run(
-      `INSERT INTO agendamentos (data, horario, local, cliente_id, responsavel, total, tempo_total, status)
-       VALUES (?,?,?,?,?,?,?,?)`,
+    var r = await run(
+      'INSERT INTO agendamentos (data, horario, local, cliente_id, responsavel, total, tempo_total, status) VALUES (?,?,?,?,?,?,?,?)',
       [data, horario, local, clienteId, profNome, preco, tempo, status]
     );
     await run(
@@ -160,11 +149,11 @@ async function main() {
     );
   }
   console.log('✅', agendamentosPlan.length, 'agendamentos');
-  console.log('🌱 Seed concluído. Rode: npm start');
+  console.log('🌱 Seed concluído. Agora rode: npm start');
   db.close();
 }
 
-main().catch((e) => {
+main().catch(function (e) {
   console.error(e);
   db.close();
   process.exit(1);
