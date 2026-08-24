@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate">
+<link rel="stylesheet" href="estilo.css?v=15">
+<title>Advocacia Integrada - Relatórios</title>
+<style>
+.nav-privado a{font-size:.9rem}
+.resumo-grid{display:grid;grid-template-columns:1fr;gap:12px;margin-top:8px}
+@media(min-width:600px){.resumo-grid{grid-template-columns:repeat(2,1fr)}}
+@media(min-width:900px){.resumo-grid{grid-template-columns:repeat(4,1fr)}}
+.resumo-item{background:#fcfbf9;border:1px solid #E5E7EB;border-radius:6px;padding:18px 14px;text-align:center;border-bottom:3px solid var(--gold-accent)}
+.resumo-item .num{font-size:1.6rem;font-weight:700;color:var(--primary-dark);display:block;margin-bottom:4px}
+.resumo-item .label{font-size:.8rem;color:var(--text-muted)}
+.btn-linha{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px}
+.btn-linha a,.btn-linha button{width:auto;display:inline-block;text-decoration:none;text-align:center}
+@media print{.nav-privado,.no-print{display:none!important}.card{box-shadow:none;border:1px solid #ccc}}
+</style>
+</head>
+<body>
+<nav class="nav-privado no-print">
+  <a href="painel.html">Geral</a>
+  <a href="clientes.html">Clientes</a>
+  <a href="servicos.html">Serviços</a>
+  <a href="novo_agendamento.html">Novo Agendamento</a>
+  <a href="agendamentos.html">Agendamentos</a>
+  <a href="historico.html">Histórico</a>
+  <a href="relatorios.html" style="border-bottom:2px solid var(--gold-accent)">Relatórios</a>
+  <a href="/sair" class="nav-login" style="color:#ea580c!important" title="Sair">Sair</a>
+</nav>
+<header class="banner"><h1>Relatórios</h1><p>Visão consolidada da operação</p></header>
+<div class="container">
+  <div class="card">
+    <h2>Indicadores gerais</h2>
+    <p id="gerado-em" style="text-align:center;color:var(--text-muted);font-size:.85rem"></p>
+    <div class="resumo-grid">
+      <div class="resumo-item"><span class="num" id="r-cli">—</span><span class="label">Clientes</span></div>
+      <div class="resumo-item"><span class="num" id="r-svc">—</span><span class="label">Serviços</span></div>
+      <div class="resumo-item"><span class="num" id="r-pro">—</span><span class="label">Profissionais</span></div>
+      <div class="resumo-item"><span class="num" id="r-age">—</span><span class="label">Agendamentos</span></div>
+      <div class="resumo-item"><span class="num" id="r-pen">—</span><span class="label">Pendentes</span></div>
+      <div class="resumo-item"><span class="num" id="r-fei">—</span><span class="label">Concluídos</span></div>
+      <div class="resumo-item"><span class="num" id="r-tot">—</span><span class="label">Honorários (total)</span></div>
+      <div class="resumo-item"><span class="num" id="r-pub">—</span><span class="label">No site público</span></div>
+    </div>
+    <div class="btn-linha no-print">
+      <button type="button" onclick="window.print()">Imprimir / PDF</button>
+      <a class="btn-link" href="/backup-json" style="padding:12px 22px">Baixar backup JSON</a>
+      <a class="btn-link btn-link-outline" href="/backup-db" style="padding:12px 22px">Baixar banco (.db)</a>
+    </div>
+  </div>
+  <div class="card">
+    <h2>Últimos agendamentos</h2>
+    <div class="tabela-scroll">
+      <table>
+        <thead><tr><th>ID</th><th>Cliente</th><th>Data</th><th>Status</th><th>Total</th></tr></thead>
+        <tbody id="lista-ultimos"><tr><td colspan="5" style="text-align:center;color:#666">Carregando...</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+<footer class="rodape no-print"><p>&copy; 2026 Advocacia Integrada - Módulo Privado</p></footer>
+<script src="auth-guard.js"></script>
+<script>
+fetch('/api/relatorio').then(function(r){return r.json();}).then(function(d){
+  document.getElementById('r-cli').textContent=d.clientes;
+  document.getElementById('r-svc').textContent=d.servicos;
+  document.getElementById('r-pro').textContent=d.profissionais;
+  document.getElementById('r-age').textContent=d.agendamentos;
+  document.getElementById('r-pen').textContent=d.pendentes;
+  document.getElementById('r-fei').textContent=d.concluidos;
+  document.getElementById('r-tot').textContent='R$ '+(d.totalHonorarios||0).toFixed(2);
+  document.getElementById('r-pub').textContent=d.profissionaisPublicos;
+  document.getElementById('gerado-em').textContent='Gerado em '+new Date().toLocaleString('pt-BR');
+  var corpo=document.getElementById('lista-ultimos');
+  if(!d.ultimos||!d.ultimos.length){
+    corpo.innerHTML='<tr><td colspan="5" style="text-align:center;color:#666">Sem registros.</td></tr>';
+    return;
+  }
+  corpo.innerHTML=d.ultimos.map(function(a){
+    return '<tr><td>'+a.id+'</td><td>'+a.nome_cliente+'</td><td>'+a.data+'</td><td>'+(a.status||'Pendente')+'</td><td>R$ '+parseFloat(a.total).toFixed(2)+'</td></tr>';
+  }).join('');
+}).catch(function(){
+  document.getElementById('lista-ultimos').innerHTML='<tr><td colspan="5" style="text-align:center">Erro ao carregar.</td></tr>';
+});
+</script>
+</body>
+</html>
