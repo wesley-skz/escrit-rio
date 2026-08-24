@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="estilo.css?v=9">
+    <title>Advocacia Integrada - Histórico</title>
+    <style>
+        .badge-ok {
+            display: inline-block; padding: 4px 10px; border-radius: 4px;
+            font-size: 0.75rem; font-weight: 600; text-transform: uppercase;
+            background: #f3faf5; color: #14532d; border: 1px solid #16a34a;
+        }
+        .btn-acao {
+            background: var(--primary-dark); color: var(--gold-accent);
+            border: 1px solid var(--gold-accent); padding: 6px 12px;
+            font-size: 0.75rem; font-weight: 600; border-radius: 4px;
+            cursor: pointer; width: auto; text-transform: uppercase;
+        }
+        .btn-acao:hover { background: var(--gold-accent); color: var(--primary-dark); }
+        .tabela-scroll { overflow-x: auto; }
+        .nav-privado a { font-size: 0.9rem; }
+        .modal-fundo { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.45);
+            z-index: 100; align-items: center; justify-content: center; padding: 16px; }
+        .modal-fundo.aberto { display: flex; }
+        .modal-box { background: #fff; border-radius: 6px; border-top: 3px solid var(--gold-accent);
+            padding: 24px; max-width: 480px; width: 100%; max-height: 80vh; overflow: auto; }
+    </style>
+</head>
+<body>
+    <nav class="nav-privado">
+        <a href="painel.html">Geral</a>
+        <a href="clientes.html">Clientes</a>
+        <a href="servicos.html">Serviços</a>
+        <a href="novo_agendamento.html">Novo Agendamento</a>
+        <a href="agendamentos.html">Agendamentos</a>
+        <a href="historico.html" style="border-bottom: 2px solid var(--gold-accent);">Histórico</a>
+        <a href="index.html" class="nav-login" style="color: #ea580c !important;" title="Sair">Sair</a>
+    </nav>
+
+    <header class="banner">
+        <h1>Histórico de Agendamentos</h1>
+        <p>Consulte os registros, cadastros e atos realizados</p>
+    </header>
+
+    <div class="container">
+        <div class="card">
+            <h2>Ações realizadas</h2>
+            <div class="tabela-scroll">
+                <table>
+                    <thead>
+                        <tr><th>Tipo</th><th>Data / Hora</th><th>Status</th><th></th></tr>
+                    </thead>
+                    <tbody id="lista-historico">
+                        <tr><td colspan="4" style="text-align:center;color:#666;">Carregando...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-fundo" id="modal" onclick="if(event.target.id==='modal')this.classList.remove('aberto')">
+        <div class="modal-box">
+            <h2 style="text-align:center;margin-top:0;">Detalhes</h2>
+            <div id="modal-info"></div>
+            <table style="margin-top:12px;">
+                <thead><tr><th>Serviço</th><th>Tempo</th><th>Honorário</th></tr></thead>
+                <tbody id="modal-itens"></tbody>
+            </table>
+            <button type="button" style="margin-top:16px;" onclick="document.getElementById('modal').classList.remove('aberto')">Fechar</button>
+        </div>
+    </div>
+
+    <footer class="rodape"><p>&copy; 2026 Advocacia Integrada - Módulo Privado</p></footer>
+    <script>
+        function carregar() {
+            fetch('/listar-agendamentos?status=Feito').then(r => r.ok ? r.json() : []).then(lista => {
+                const corpo = document.getElementById('lista-historico');
+                if (!lista.length) {
+                    corpo.innerHTML = '<tr><td colspan="4" style="text-align:center;color:#666;">Nenhuma ação concluída ainda.</td></tr>';
+                    return;
+                }
+                corpo.innerHTML = lista.map(a =>
+                    '<tr>'+
+                    '<td><strong>Agendamento</strong> — '+(a.nome_cliente||'')+'</td>'+
+                    '<td>'+a.data+(a.horario ? ' '+a.horario : '')+'</td>'+
+                    '<td><span class="badge-ok">Feito</span></td>'+
+                    '<td><button type="button" class="btn-acao" onclick="verMais('+a.id+')">Ver mais</button></td>'+
+                    '</tr>'
+                ).join('');
+            }).catch(() => {
+                document.getElementById('lista-historico').innerHTML =
+                    '<tr><td colspan="4" style="text-align:center;color:#666;">Servidor local necessário.</td></tr>';
+            });
+        }
+        function verMais(id) {
+            fetch('/listar-agendamentos?status=all').then(r => r.json()).then(lista => {
+                const a = lista.find(x => x.id == id);
+                if (!a) return;
+                document.getElementById('modal-info').innerHTML =
+                    '<p><strong>Tipo:</strong> Agendamento</p>'+
+                    '<p><strong>Cliente:</strong> '+a.nome_cliente+'</p>'+
+                    '<p><strong>Responsável:</strong> '+a.responsavel+'</p>'+
+                    '<p><strong>Data:</strong> '+a.data+'</p>'+
+                    '<p><strong>Local:</strong> '+(a.local||'—')+'</p>'+
+                    '<p><strong>Total:</strong> R$ '+parseFloat(a.total).toFixed(2)+'</p>'+
+                    '<p><strong>Status:</strong> Feito</p>';
+            });
+            fetch('/detalhes-agendamento/'+id).then(r => r.json()).then(itens => {
+                document.getElementById('modal-itens').innerHTML = itens.map(i =>
+                    '<tr><td>'+i.descricao+'</td><td>'+i.tempo_estimado+' min</td><td>R$ '+parseFloat(i.preco_cobrado).toFixed(2)+'</td></tr>'
+                ).join('') || '<tr><td colspan="3">Sem itens</td></tr>';
+                document.getElementById('modal').classList.add('aberto');
+            });
+        }
+        carregar();
+    </script>
+</body>
+</html>
