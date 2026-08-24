@@ -1,51 +1,45 @@
-/* Validação de CPF/CNPJ e datas — feedback visual */
+/* Validação de formato CPF/CNPJ e datas — não verifica dígito verificador */
 (function (global) {
   function soDigitos(v) {
     return String(v || '').replace(/\D/g, '');
   }
 
-  function cpfValido(cpf) {
-    var n = soDigitos(cpf);
-    if (n.length !== 11 || /^(\d)\1+$/.test(n)) return false;
-    var s = 0, i;
-    for (i = 0; i < 9; i++) s += parseInt(n.charAt(i), 10) * (10 - i);
-    var r = (s * 10) % 11;
-    if (r === 10) r = 0;
-    if (r !== parseInt(n.charAt(9), 10)) return false;
-    s = 0;
-    for (i = 0; i < 10; i++) s += parseInt(n.charAt(i), 10) * (11 - i);
-    r = (s * 10) % 11;
-    if (r === 10) r = 0;
-    return r === parseInt(n.charAt(10), 10);
-  }
-
-  function cnpjValido(cnpj) {
-    var n = soDigitos(cnpj);
-    if (n.length !== 14 || /^(\d)\1+$/.test(n)) return false;
-    var p1 = [5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2];
-    var p2 = [6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2];
-    var s = 0, i;
-    for (i = 0; i < 12; i++) s += parseInt(n.charAt(i), 10) * p1[i];
-    var r = s % 11;
-    r = r < 2 ? 0 : 11 - r;
-    if (r !== parseInt(n.charAt(12), 10)) return false;
-    s = 0;
-    for (i = 0; i < 13; i++) s += parseInt(n.charAt(i), 10) * p2[i];
-    r = s % 11;
-    r = r < 2 ? 0 : 11 - r;
-    return r === parseInt(n.charAt(13), 10);
-  }
+  /* Formatos aceitos:
+     CPF:  000.000.000-00
+     CNPJ: 00.000.000/0000-00
+  */
+  var RE_CPF  = /^\d{3}\.\d{3}\.\d{3}-\d{2}$/;
+  var RE_CNPJ = /^\d{2}\.\d{3}\.\d{3}\/\d{4}-\d{2}$/;
 
   function cpfCnpjStatus(valor) {
-    var n = soDigitos(valor);
-    if (!n) return { ok: null, msg: '' };
-    if (n.length <= 11) {
-      if (n.length < 11) return { ok: false, msg: 'CPF incompleto' };
-      return cpfValido(n) ? { ok: true, msg: 'CPF válido' } : { ok: false, msg: 'CPF inválido' };
+    var v = String(valor || '').trim();
+    if (!v) return { ok: null, msg: '' };
+
+    if (RE_CPF.test(v)) {
+      return { ok: true, msg: 'Formato de CPF aceito' };
     }
-    if (n.length < 14) return { ok: false, msg: 'CNPJ incompleto' };
-    if (n.length > 14) return { ok: false, msg: 'Documento inválido' };
-    return cnpjValido(n) ? { ok: true, msg: 'CNPJ válido' } : { ok: false, msg: 'CNPJ inválido' };
+    if (RE_CNPJ.test(v)) {
+      return { ok: true, msg: 'Formato de CNPJ aceito' };
+    }
+
+    // Só dígitos ou máscara incompleta → inválido de formato
+    var n = soDigitos(v);
+    if (n.length > 0 && n.length <= 11 && !RE_CPF.test(v)) {
+      return {
+        ok: false,
+        msg: 'Use o formato de CPF: 000.000.000-00'
+      };
+    }
+    if (n.length > 11) {
+      return {
+        ok: false,
+        msg: 'Use o formato de CNPJ: 00.000.000/0000-00'
+      };
+    }
+    return {
+      ok: false,
+      msg: 'Formato inválido. CPF: 000.000.000-00 | CNPJ: 00.000.000/0000-00'
+    };
   }
 
   function dataStatus(valor) {
