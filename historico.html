@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="estilo.css?v=9">
+    <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate">
+    <link rel="stylesheet" href="estilo.css?v=12">
     <title>Advocacia Integrada - Histórico</title>
     <style>
         .badge-ok {
@@ -35,7 +36,7 @@
         <a href="novo_agendamento.html">Novo Agendamento</a>
         <a href="agendamentos.html">Agendamentos</a>
         <a href="historico.html" style="border-bottom: 2px solid var(--gold-accent);">Histórico</a>
-        <a href="index.html" class="nav-login" style="color: #ea580c !important;" title="Sair">Sair</a>
+        <a href="/sair" class="nav-login" style="color: #ea580c !important;" title="Sair">Sair</a>
     </nav>
 
     <header class="banner">
@@ -72,6 +73,7 @@
     </div>
 
     <footer class="rodape"><p>&copy; 2026 Advocacia Integrada - Módulo Privado</p></footer>
+    <script src="auth-guard.js"></script>
     <script>
         function carregar() {
             fetch('/listar-agendamentos?status=Feito').then(r => r.ok ? r.json() : []).then(lista => {
