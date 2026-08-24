@@ -3,30 +3,34 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="stylesheet" href="estilo.css?v=9">
+<link rel="stylesheet" href="estilo.css?v=12">
 <title>Advocacia Integrada - Clientes</title>
 <style>
 .form-linha{display:grid;grid-template-columns:1fr;gap:0 16px}
 @media(min-width:640px){.form-linha{grid-template-columns:1fr 1fr}}
-.btn-inspecionar{background:var(--primary-dark);color:var(--gold-accent);border:1px solid var(--gold-accent);padding:6px 12px;font-size:.75rem;font-weight:600;border-radius:4px;cursor:pointer;width:auto;text-transform:uppercase}
-.btn-inspecionar:hover{background:var(--gold-accent);color:var(--primary-dark)}
+.btn-inspecionar,.btn-acao{background:var(--primary-dark);color:var(--gold-accent);border:1px solid var(--gold-accent);padding:6px 12px;font-size:.75rem;font-weight:600;border-radius:4px;cursor:pointer;width:auto;text-transform:uppercase;margin:2px}
+.btn-inspecionar:hover,.btn-acao:hover{background:var(--gold-accent);color:var(--primary-dark)}
+.btn-perigo{background:#7f1d1d;color:#fecaca;border:1px solid #f87171}
+.btn-perigo:hover{background:#f87171;color:#7f1d1d}
 .modal-fundo{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:100;align-items:center;justify-content:center;padding:16px}
 .modal-fundo.aberto{display:flex}
-.modal-box{background:#fff;border-radius:6px;border-top:3px solid var(--gold-accent);padding:24px;max-width:420px;width:100%}
+.modal-box{background:#fff;border-radius:6px;border-top:3px solid var(--gold-accent);padding:24px;max-width:480px;width:100%;max-height:90vh;overflow:auto}
+.modal-acoes{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
 .tabela-scroll{overflow-x:auto}
 .nav-privado a{font-size:.9rem}
+.aviso-excluir{background:#fff5f5;border:1px solid #fca5a5;border-radius:6px;padding:12px;margin-top:12px;font-size:.9rem;color:#7f1d1d}
 </style>
 </head>
 <body>
-    <nav class="nav-privado">
-        <a href="painel.html">Geral</a>
-        <a href="clientes.html" style="border-bottom: 2px solid var(--gold-accent);">Clientes</a>
-        <a href="servicos.html">Serviços</a>
-        <a href="novo_agendamento.html">Novo Agendamento</a>
-        <a href="agendamentos.html">Agendamentos</a>
-        <a href="historico.html">Histórico</a>
-        <a href="index.html" class="nav-login" style="color: #ea580c !important;" title="Sair">Sair</a>
-    </nav>
+<nav class="nav-privado">
+  <a href="painel.html">Geral</a>
+  <a href="clientes.html" style="border-bottom: 2px solid var(--gold-accent);">Clientes</a>
+  <a href="servicos.html">Serviços</a>
+  <a href="novo_agendamento.html">Novo Agendamento</a>
+  <a href="agendamentos.html">Agendamentos</a>
+  <a href="historico.html">Histórico</a>
+  <a href="index.html" class="nav-login" style="color: #ea580c !important;" title="Sair">Sair</a>
+</nav>
 <header class="banner"><h1>Fichas de Clientes</h1><p>Cadastre e gerencie os dados corporativos e individuais</p></header>
 <div class="container">
 <div class="card">
@@ -47,14 +51,169 @@
 <tbody id="lista-clientes"><tr><td colspan="4" style="text-align:center;color:#666">Carregando...</td></tr></tbody></table></div>
 </div>
 </div>
-<div class="modal-fundo" id="modal-cliente" onclick="if(event.target.id==='modal-cliente')this.classList.remove('aberto')">
-<div class="modal-box"><h3 style="text-align:center">Ficha do Cliente</h3><div id="modal-conteudo"></div>
-<button type="button" style="margin-top:16px" onclick="document.getElementById('modal-cliente').classList.remove('aberto')">Fechar</button></div>
+
+<div class="modal-fundo" id="modal-cliente" onclick="if(event.target.id==='modal-cliente')fecharModal()">
+  <div class="modal-box">
+    <h3 style="text-align:center;margin-top:0">Ficha do Cliente</h3>
+    <div id="modal-view"></div>
+    <div id="modal-edit" style="display:none">
+      <label>Nome / Razão Social</label><input type="text" id="e-nome">
+      <label>CPF / CNPJ</label><input type="text" id="e-cpf">
+      <label>Telefone</label><input type="text" id="e-telefone">
+      <label>E-mail</label><input type="text" id="e-email">
+      <label>Endereço</label><input type="text" id="e-endereco">
+      <label>Data de nascimento</label><input type="date" id="e-nasc">
+    </div>
+    <div id="modal-excluir" style="display:none" class="aviso-excluir">
+      <strong>Exclusão em duas fases</strong>
+      <p id="excluir-fase-txt">Fase 1: confirme que deseja excluir este cliente.</p>
+    </div>
+    <div class="modal-acoes" id="acoes-padrao">
+      <button type="button" class="btn-acao" onclick="entrarEdicao()">Editar</button>
+      <button type="button" class="btn-acao btn-perigo" onclick="iniciarExclusao()">Excluir</button>
+      <button type="button" class="btn-acao" onclick="fecharModal()">Fechar</button>
+    </div>
+    <div class="modal-acoes" id="acoes-edit" style="display:none">
+      <button type="button" class="btn-acao" onclick="salvarEdicao()">Salvar alterações</button>
+      <button type="button" class="btn-acao" onclick="cancelarEdicao()">Cancelar</button>
+    </div>
+    <div class="modal-acoes" id="acoes-excluir" style="display:none">
+      <button type="button" class="btn-acao btn-perigo" id="btn-excluir-confirm" onclick="confirmarExclusao()">Confirmar exclusão</button>
+      <button type="button" class="btn-acao" onclick="cancelarExclusao()">Cancelar</button>
+    </div>
+  </div>
 </div>
+
 <footer class="rodape"><p>&copy; 2026 Advocacia Integrada - Módulo Privado</p></footer>
 <script>
-function inspecionar(id){fetch('/cliente/'+id).then(r=>r.json()).then(c=>{if(c.error)return alert(c.error);document.getElementById('modal-conteudo').innerHTML='<p><strong>Nome:</strong> '+(c.nome||'—')+'</p><p><strong>CPF/CNPJ:</strong> '+(c.cpf||'—')+'</p><p><strong>Telefone:</strong> '+(c.telefone||'—')+'</p><p><strong>E-mail:</strong> '+(c.email||'—')+'</p><p><strong>Endereço:</strong> '+(c.endereco||'—')+'</p><p><strong>Nascimento:</strong> '+(c.data_nascimento||'—')+'</p>';document.getElementById('modal-cliente').classList.add('aberto');}).catch(()=>alert('Servidor local necessário.'));}
-fetch('/listar-clientes').then(r=>r.ok?r.json():[]).then(clientes=>{const corpo=document.getElementById('lista-clientes');if(!clientes.length){corpo.innerHTML='<tr><td colspan="4" style="text-align:center;color:#666">Nenhum cliente cadastrado.</td></tr>';return;}corpo.innerHTML=clientes.map(c=>'<tr><td><strong>'+c.nome+'</strong></td><td>'+c.cpf+'</td><td>'+c.telefone+'</td><td><button type="button" class="btn-inspecionar" onclick="inspecionar('+c.id+')">Inspecionar</button></td></tr>').join('');}).catch(()=>{document.getElementById('lista-clientes').innerHTML='<tr><td colspan="4" style="text-align:center;color:#666">Lista disponível com o servidor ativo.</td></tr>';});
+var clienteAtual = null;
+var faseExclusao = 0;
+
+function carregar() {
+  fetch('/listar-clientes').then(function(r){return r.ok?r.json():[];}).then(function(clientes){
+    var corpo = document.getElementById('lista-clientes');
+    if (!clientes.length) {
+      corpo.innerHTML = '<tr><td colspan="4" style="text-align:center;color:#666">Nenhum cliente cadastrado.</td></tr>';
+      return;
+    }
+    corpo.innerHTML = clientes.map(function(c){
+      return '<tr><td><strong>'+c.nome+'</strong></td><td>'+c.cpf+'</td><td>'+c.telefone+
+        '</td><td><button type="button" class="btn-inspecionar" onclick="inspecionar('+c.id+')">Ver detalhes</button></td></tr>';
+    }).join('');
+  }).catch(function(){
+    document.getElementById('lista-clientes').innerHTML = '<tr><td colspan="4" style="text-align:center;color:#666">Lista disponível com o servidor ativo.</td></tr>';
+  });
+}
+
+function inspecionar(id) {
+  faseExclusao = 0;
+  fetch('/cliente/'+id).then(function(r){return r.json();}).then(function(c){
+    if (c.error) return alert(c.error);
+    clienteAtual = c;
+    mostrarView();
+    document.getElementById('modal-cliente').classList.add('aberto');
+  }).catch(function(){ alert('Servidor local necessário.'); });
+}
+
+function mostrarView() {
+  var c = clienteAtual;
+  document.getElementById('modal-view').style.display = 'block';
+  document.getElementById('modal-edit').style.display = 'none';
+  document.getElementById('modal-excluir').style.display = 'none';
+  document.getElementById('acoes-padrao').style.display = 'flex';
+  document.getElementById('acoes-edit').style.display = 'none';
+  document.getElementById('acoes-excluir').style.display = 'none';
+  document.getElementById('modal-view').innerHTML =
+    '<p><strong>Nome:</strong> '+(c.nome||'—')+'</p>'+
+    '<p><strong>CPF/CNPJ:</strong> '+(c.cpf||'—')+'</p>'+
+    '<p><strong>Telefone:</strong> '+(c.telefone||'—')+'</p>'+
+    '<p><strong>E-mail:</strong> '+(c.email||'—')+'</p>'+
+    '<p><strong>Endereço:</strong> '+(c.endereco||'—')+'</p>'+
+    '<p><strong>Nascimento:</strong> '+(c.data_nascimento||'—')+'</p>';
+}
+
+function entrarEdicao() {
+  var c = clienteAtual;
+  document.getElementById('modal-view').style.display = 'none';
+  document.getElementById('modal-edit').style.display = 'block';
+  document.getElementById('modal-excluir').style.display = 'none';
+  document.getElementById('acoes-padrao').style.display = 'none';
+  document.getElementById('acoes-edit').style.display = 'flex';
+  document.getElementById('acoes-excluir').style.display = 'none';
+  document.getElementById('e-nome').value = c.nome || '';
+  document.getElementById('e-cpf').value = c.cpf || '';
+  document.getElementById('e-telefone').value = c.telefone || '';
+  document.getElementById('e-email').value = c.email || '';
+  document.getElementById('e-endereco').value = c.endereco || '';
+  document.getElementById('e-nasc').value = c.data_nascimento || '';
+}
+
+function cancelarEdicao() { mostrarView(); }
+
+function salvarEdicao() {
+  var body = {
+    id: clienteAtual.id,
+    nome: document.getElementById('e-nome').value.trim(),
+    cpf: document.getElementById('e-cpf').value.trim(),
+    telefone: document.getElementById('e-telefone').value.trim(),
+    email: document.getElementById('e-email').value.trim(),
+    endereco: document.getElementById('e-endereco').value.trim(),
+    data_nascimento: document.getElementById('e-nasc').value
+  };
+  if (!body.nome || !body.cpf || !body.telefone) return alert('Nome, CPF/CNPJ e telefone são obrigatórios.');
+  fetch('/atualizar-cliente', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  }).then(function(r){return r.json();}).then(function(res){
+    if (!res.success) return alert(res.error || 'Falha ao salvar.');
+    clienteAtual = Object.assign(clienteAtual, body);
+    mostrarView();
+    carregar();
+  }).catch(function(){ alert('Servidor local necessário.'); });
+}
+
+function iniciarExclusao() {
+  faseExclusao = 1;
+  document.getElementById('modal-view').style.display = 'block';
+  document.getElementById('modal-edit').style.display = 'none';
+  document.getElementById('modal-excluir').style.display = 'block';
+  document.getElementById('excluir-fase-txt').textContent = 'Fase 1 de 2: deseja realmente excluir "'+(clienteAtual.nome||'')+'"?';
+  document.getElementById('acoes-padrao').style.display = 'none';
+  document.getElementById('acoes-edit').style.display = 'none';
+  document.getElementById('acoes-excluir').style.display = 'flex';
+  document.getElementById('btn-excluir-confirm').textContent = 'Sim, continuar (fase 1)';
+}
+
+function cancelarExclusao() {
+  faseExclusao = 0;
+  mostrarView();
+}
+
+function confirmarExclusao() {
+  if (faseExclusao === 1) {
+    faseExclusao = 2;
+    document.getElementById('excluir-fase-txt').textContent = 'Fase 2 de 2: esta ação é definitiva. Confirme a exclusão do cliente.';
+    document.getElementById('btn-excluir-confirm').textContent = 'Excluir definitivamente';
+    return;
+  }
+  if (faseExclusao !== 2) return;
+  fetch('/excluir-cliente', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ id: clienteAtual.id })
+  }).then(function(r){return r.json();}).then(function(res){
+    if (!res.success) return alert('Não foi possível excluir.');
+    fecharModal();
+    carregar();
+  }).catch(function(){ alert('Servidor local necessário.'); });
+}
+
+function fecharModal() {
+  document.getElementById('modal-cliente').classList.remove('aberto');
+  faseExclusao = 0;
+  clienteAtual = null;
+}
+
+carregar();
 </script>
 </body>
 </html>
