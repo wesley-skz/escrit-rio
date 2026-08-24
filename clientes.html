@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate">
-<link rel="stylesheet" href="estilo.css?v=12">
+<link rel="stylesheet" href="estilo.css?v=15">
 <title>Advocacia Integrada - Clientes</title>
 <style>
 .form-linha{display:grid;grid-template-columns:1fr;gap:0 16px}
@@ -20,6 +20,12 @@
 .tabela-scroll{overflow-x:auto}
 .nav-privado a{font-size:.9rem}
 .aviso-excluir{background:#fff5f5;border:1px solid #fca5a5;border-radius:6px;padding:12px;margin-top:12px;font-size:.9rem;color:#7f1d1d}
+.busca-bar{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:14px;align-items:center}
+.busca-bar input{flex:1;min-width:180px;margin:0}
+.campo-feedback{display:block;font-size:.78rem;margin-top:4px;min-height:1.1em}
+.fb-ok{color:#14532d}.fb-erro{color:#991b1b}
+input.campo-ok{border-color:#16a34a!important;background:#f3faf5}
+input.campo-erro{border-color:#dc2626!important;background:#fef2f2}
 </style>
 </head>
 <body>
@@ -30,15 +36,16 @@
   <a href="novo_agendamento.html">Novo Agendamento</a>
   <a href="agendamentos.html">Agendamentos</a>
   <a href="historico.html">Histórico</a>
+  <a href="relatorios.html">Relatórios</a>
   <a href="/sair" class="nav-login" style="color: #ea580c !important;" title="Sair">Sair</a>
 </nav>
 <header class="banner"><h1>Fichas de Clientes</h1><p>Cadastre e gerencie os dados corporativos e individuais</p></header>
 <div class="container">
 <div class="card">
 <h2>Novo Cadastro de Cliente</h2>
-<form action="/salvar-cliente" method="POST">
+<form action="/salvar-cliente" method="POST" id="form-cliente">
 <div class="form-linha"><div><label for="nome">Nome / Razão Social</label><input type="text" id="nome" name="nome" required></div>
-<div><label for="cpf">CPF / CNPJ</label><input type="text" id="cpf" name="cpf" required></div></div>
+<div><label for="cpf">CPF / CNPJ</label><input type="text" id="cpf" name="cpf" required placeholder="000.000.000-00 ou 00.000.000/0000-00"></div></div>
 <div class="form-linha"><div><label for="telefone">Telefone</label><input type="tel" id="telefone" name="telefone" required></div>
 <div><label for="email">E-mail</label><input type="text" id="email" name="email"></div></div>
 <label for="endereco">Endereço</label><input type="text" id="endereco" name="endereco">
@@ -48,6 +55,9 @@
 </div>
 <div class="card">
 <h2>Clientes cadastrados</h2>
+<div class="busca-bar">
+  <input type="search" id="busca-cli" placeholder="Buscar por nome, CPF/CNPJ, telefone ou e-mail..." oninput="filtrar()">
+</div>
 <div class="tabela-scroll"><table><thead><tr><th>Nome / Razão Social</th><th>CPF / CNPJ</th><th>Telefone</th><th></th></tr></thead>
 <tbody id="lista-clientes"><tr><td colspan="4" style="text-align:center;color:#666">Carregando...</td></tr></tbody></table></div>
 </div>
@@ -87,24 +97,55 @@
 
 <footer class="rodape"><p>&copy; 2026 Advocacia Integrada - Módulo Privado</p></footer>
 <script src="auth-guard.js"></script>
+<script src="validacao.js"></script>
 <script>
 var clienteAtual = null;
 var faseExclusao = 0;
+var todosClientes = [];
+
+Validacao.ligarCpfCnpj(document.getElementById('cpf'));
+Validacao.ligarData(document.getElementById('data_nascimento'));
+
+document.getElementById('form-cliente').addEventListener('submit', function(e) {
+  var st = Validacao.cpfCnpjStatus(document.getElementById('cpf').value);
+  if (st.ok === false) {
+    e.preventDefault();
+    alert('CPF/CNPJ: ' + st.msg);
+    return;
+  }
+  var dn = document.getElementById('data_nascimento').value;
+  if (dn) {
+    var ds = Validacao.dataStatus(dn);
+    if (ds.ok === false) {
+      e.preventDefault();
+      alert('Data de nascimento: ' + ds.msg);
+    }
+  }
+});
 
 function carregar() {
   fetch('/listar-clientes').then(function(r){return r.ok?r.json():[];}).then(function(clientes){
-    var corpo = document.getElementById('lista-clientes');
-    if (!clientes.length) {
-      corpo.innerHTML = '<tr><td colspan="4" style="text-align:center;color:#666">Nenhum cliente cadastrado.</td></tr>';
-      return;
-    }
-    corpo.innerHTML = clientes.map(function(c){
-      return '<tr><td><strong>'+c.nome+'</strong></td><td>'+c.cpf+'</td><td>'+c.telefone+
-        '</td><td><button type="button" class="btn-inspecionar" onclick="inspecionar('+c.id+')">Ver detalhes</button></td></tr>';
-    }).join('');
+    todosClientes = clientes;
+    filtrar();
   }).catch(function(){
     document.getElementById('lista-clientes').innerHTML = '<tr><td colspan="4" style="text-align:center;color:#666">Lista disponível com o servidor ativo.</td></tr>';
   });
+}
+
+function filtrar() {
+  var q = (document.getElementById('busca-cli').value || '').toLowerCase().trim();
+  var lista = !q ? todosClientes : todosClientes.filter(function(c) {
+    return [c.nome, c.cpf, c.telefone, c.email, c.endereco].join(' ').toLowerCase().indexOf(q) !== -1;
+  });
+  var corpo = document.getElementById('lista-clientes');
+  if (!lista.length) {
+    corpo.innerHTML = '<tr><td colspan="4" style="text-align:center;color:#666">Nenhum cliente encontrado.</td></tr>';
+    return;
+  }
+  corpo.innerHTML = lista.map(function(c){
+    return '<tr><td><strong>'+c.nome+'</strong></td><td>'+c.cpf+'</td><td>'+c.telefone+
+      '</td><td><button type="button" class="btn-inspecionar" onclick="inspecionar('+c.id+')">Ver detalhes</button></td></tr>';
+  }).join('');
 }
 
 function inspecionar(id) {
@@ -148,6 +189,8 @@ function entrarEdicao() {
   document.getElementById('e-email').value = c.email || '';
   document.getElementById('e-endereco').value = c.endereco || '';
   document.getElementById('e-nasc').value = c.data_nascimento || '';
+  Validacao.ligarCpfCnpj(document.getElementById('e-cpf'));
+  Validacao.ligarData(document.getElementById('e-nasc'));
 }
 
 function cancelarEdicao() { mostrarView(); }
@@ -163,6 +206,12 @@ function salvarEdicao() {
     data_nascimento: document.getElementById('e-nasc').value
   };
   if (!body.nome || !body.cpf || !body.telefone) return alert('Nome, CPF/CNPJ e telefone são obrigatórios.');
+  var st = Validacao.cpfCnpjStatus(body.cpf);
+  if (st.ok === false) return alert('CPF/CNPJ: ' + st.msg);
+  if (body.data_nascimento) {
+    var ds = Validacao.dataStatus(body.data_nascimento);
+    if (ds.ok === false) return alert('Data: ' + ds.msg);
+  }
   fetch('/atualizar-cliente', {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body)

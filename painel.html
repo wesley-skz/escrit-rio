@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate">
-    <link rel="stylesheet" href="estilo.css?v=12">
+    <link rel="stylesheet" href="estilo.css?v=15">
     <title>Advocacia Integrada - Central</title>
     <style>
         .grid-atalhos { display: grid; grid-template-columns: 1fr; gap: 16px; margin-top: 8px; }
@@ -29,6 +29,8 @@
         .lista-orientacoes { margin: 0; padding-left: 1.2rem; color: var(--text-muted); line-height: 1.7; font-size: 0.92rem; }
         .lista-orientacoes li { margin-bottom: 6px; }
         .hora-sistema { text-align: center; font-size: 0.85rem; color: var(--text-muted); margin: 0 0 18px 0; }
+        .btn-linha { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-top: 8px; }
+        .btn-linha a { width: auto; display: inline-block; }
     </style>
 </head>
 <body>
@@ -39,6 +41,7 @@
         <a href="novo_agendamento.html">Novo Agendamento</a>
         <a href="agendamentos.html">Agendamentos</a>
         <a href="historico.html">Histórico</a>
+        <a href="relatorios.html">Relatórios</a>
         <a href="/sair" class="nav-login" style="color: #ea580c !important;" title="Sair">Sair</a>
     </nav>
 
@@ -70,11 +73,20 @@
             <h2>Atalhos operacionais</h2>
             <div class="grid-atalhos">
                 <a href="clientes.html" class="bloco-atalho"><span>👥</span><h4>Gestão de Clientes</h4><p>Cadastros e fichas</p></a>
-                <a href="servicos.html" class="bloco-atalho"><span>⚖️</span><h4>Serviços & Honorários</h4><p>Tabela de serviços</p></a>
+                <a href="servicos.html" class="bloco-atalho"><span>⚖️</span><h4>Serviços &amp; Honorários</h4><p>Tabela de serviços</p></a>
                 <a href="novo_agendamento.html" class="bloco-atalho"><span>📅</span><h4>Novo Agendamento</h4><p>Criar demanda</p></a>
                 <a href="agendamentos.html" class="bloco-atalho"><span>📌</span><h4>Agendamentos</h4><p>Pendências</p></a>
                 <a href="historico.html" class="bloco-atalho"><span>🔍</span><h4>Histórico</h4><p>Ações realizadas</p></a>
-                <a href="servicos.html" class="bloco-atalho"><span>👔</span><h4>Profissionais</h4><p>Cadastro na área de serviços</p></a>
+                <a href="relatorios.html" class="bloco-atalho"><span>📊</span><h4>Relatórios</h4><p>Indicadores e backup</p></a>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Backup dos dados</h2>
+            <p style="text-align:center;color:var(--text-muted);font-size:0.9rem;">Baixe uma cópia de segurança do sistema. Guarde o arquivo em local seguro.</p>
+            <div class="btn-linha">
+                <a class="btn-link" href="/backup-json">Baixar backup JSON</a>
+                <a class="btn-link btn-link-outline" href="/backup-db">Baixar banco (.db)</a>
             </div>
         </div>
 
@@ -84,6 +96,7 @@
                 <li>Cadastre o cliente completo antes de gerar agendamento.</li>
                 <li>Cadastre profissionais em Serviços para selecioná-los no novo agendamento.</li>
                 <li>Marque pendências como concluídas em Agendamentos para constarem no Histórico.</li>
+                <li>Faça backup periódico (JSON ou .db) pela área acima ou em Relatórios.</li>
             </ul>
         </div>
     </div>
