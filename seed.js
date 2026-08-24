@@ -1,14 +1,11 @@
 /**
- * Seed de dados fictícios para Advocacia Integrada
- * Uso no Codespace / local:
- *   node seed.js
+ * Seed de dados fictícios — Advocacia Integrada
+ * No Codespace ou local:
+ *   npm run seed
+ *   (ou: node seed.js)
  *
- * - 19 clientes
- * - 16 serviços
- * - 12 profissionais
- * - 12 agendamentos (8 pendentes + 4 feitos)
- *
- * Se já houver dados, limpa clientes/servicos/profissionais/agendamentos e reinsere.
+ * Insere: 19 clientes, 16 serviços, 12 profissionais, 12 agendamentos
+ * Limpa antes os dados operacionais (não apaga usuarios).
  */
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
@@ -72,7 +69,7 @@ const profissionais = [
   ['Marcos Vinícius Teixeira', '303.404.505-60', '(41) 3333-1012', '(41) 99803-1012', 'Rua Padre Anchieta, 600 - Curitiba', 'Direito Empresarial', 'marcos.teixeira@adv.com'],
 ];
 
-// agendamentos: [clienteIndex0, data, horario, local, profissionalIndex0, servicoIndex0, status]
+// [clienteIdx, data, horario, local, profIdx, servicoIdx, status]
 const agendamentosPlan = [
   [0, '2026-08-25 09:00', '09:00', 'Sede', 0, 0, 'Pendente'],
   [1, '2026-08-26 10:30', '10:30', 'Sede', 2, 5, 'Pendente'],
@@ -97,19 +94,9 @@ function run(sql, params = []) {
   });
 }
 
-function all(sql, params = []) {
-  return new Promise((resolve, reject) => {
-    db.all(sql, params, (err, rows) => {
-      if (err) reject(err);
-      else resolve(rows || []);
-    });
-  });
-}
-
 async function main() {
-  console.log('🌱 Iniciando seed em', dbPath);
+  console.log('🌱 Seed em', dbPath);
 
-  // Garante tabelas
   await run(`CREATE TABLE IF NOT EXISTS clientes (
     id INTEGER PRIMARY KEY AUTOINCREMENT, nome TEXT NOT NULL, cpf TEXT NOT NULL, telefone TEXT NOT NULL,
     endereco TEXT, email TEXT, data_nascimento TEXT)`);
@@ -126,7 +113,6 @@ async function main() {
     id INTEGER PRIMARY KEY AUTOINCREMENT, agendamento_id INTEGER NOT NULL,
     servico_id INTEGER NOT NULL, preco_cobrado REAL NOT NULL)`);
 
-  // Limpa dados operacionais (não mexe em usuarios)
   await run('DELETE FROM itens_agendamento');
   await run('DELETE FROM agendamentos');
   await run('DELETE FROM clientes');
@@ -134,10 +120,7 @@ async function main() {
   await run('DELETE FROM profissionais');
 
   for (const c of clientes) {
-    await run(
-      'INSERT INTO clientes (nome, cpf, telefone, endereco, email, data_nascimento) VALUES (?,?,?,?,?,?)',
-      c
-    );
+    await run('INSERT INTO clientes (nome, cpf, telefone, endereco, email, data_nascimento) VALUES (?,?,?,?,?,?)', c);
   }
   console.log('✅', clientes.length, 'clientes');
 
@@ -155,7 +138,6 @@ async function main() {
   }
   console.log('✅', profissionais.length, 'profissionais');
 
-  // IDs após insert são 1..N na ordem
   for (const a of agendamentosPlan) {
     const clienteId = a[0] + 1;
     const data = a[1];
@@ -177,8 +159,7 @@ async function main() {
       [r.lastID, servicoId, preco]
     );
   }
-  console.log('✅', agendamentosPlan.length, 'agendamentos (8 Pendente + 4 Feito)');
-
+  console.log('✅', agendamentosPlan.length, 'agendamentos');
   console.log('🌱 Seed concluído. Rode: npm start');
   db.close();
 }
