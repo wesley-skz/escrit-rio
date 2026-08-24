@@ -1,15 +1,3 @@
-/**
- * Seed de dados fictícios — Advocacia Integrada
- *
- * No Codespace ou na máquina local:
- *   git pull origin main
- *   npm install
- *   npm run seed
- *   npm start
- *
- * Insere: 19 clientes, 16 serviços, 12 profissionais, 12 agendamentos
- * (apaga antes os dados operacionais; não apaga usuarios)
- */
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 
@@ -35,7 +23,7 @@ const clientes = [
   ['Camila Duarte Pires', '246.357.468-11', '(41) 96654-3210', 'Av. Silva Jardim, 550 - Curitiba', 'camila.pires@email.com', '1994-05-19'],
   ['Indústria Épsilon S.A.', '56.789.012/0001-34', '(41) 3333-2005', 'Rua Professor Pedro Viriato, 200 - Curitiba', 'financeiro@epsilon.com.br', ''],
   ['Roberto Carlos Souza', '357.468.579-22', '(41) 95543-2109', 'Rua João Gualberto, 800 - Curitiba', 'roberto.souza@email.com', '1970-03-28'],
-  ['Vanessa Almeida Cruz', '468.579.680-33', '(41) 94432-1098', 'Rua Comendador Araújo, 210 - Curitiba', 'vanessa.cruz@email.com', '1989-09-07'],
+  ['Vanessa Almeida Cruz', '468.579.680-33', '(41) 94432-1098', 'Rua Comendador Araújo, 210 - Curitiba', 'vanessa.cruz@email.com', '1989-09-07']
 ];
 
 const servicos = [
@@ -54,7 +42,7 @@ const servicos = [
   ['Defesa em processo criminal', 2200, 360],
   ['Ação de despejo', 1100, 200],
   ['Mediação familiar', 850, 120],
-  ['Consultoria tributária', 1300, 180],
+  ['Consultoria tributária', 1300, 180]
 ];
 
 const profissionais = [
@@ -69,7 +57,7 @@ const profissionais = [
   ['Isabela Campos Duarte', '999.000.111-22', '(41) 3333-1009', '(41) 99999-1009', 'Rua Voluntários da Pátria, 150 - Curitiba', 'Direito Trabalhista', 'isabela.duarte@adv.com'],
   ['João Pedro Almeida', '101.202.303-40', '(41) 3333-1010', '(41) 99801-1010', 'Rua Mateus Leme, 420 - Curitiba', 'Direito Penal', 'joao.almeida@adv.com'],
   ['Larissa Barbosa Melo', '202.303.404-50', '(41) 3333-1011', '(41) 99802-1011', 'Av. Vicente Machado, 80 - Curitiba', 'Direito de Família', 'larissa.melo@adv.com'],
-  ['Marcos Vinícius Teixeira', '303.404.505-60', '(41) 3333-1012', '(41) 99803-1012', 'Rua Padre Anchieta, 600 - Curitiba', 'Direito Empresarial', 'marcos.teixeira@adv.com'],
+  ['Marcos Vinícius Teixeira', '303.404.505-60', '(41) 3333-1012', '(41) 99803-1012', 'Rua Padre Anchieta, 600 - Curitiba', 'Direito Empresarial', 'marcos.teixeira@adv.com']
 ];
 
 // [clienteIdx, data, horario, local, profIdx, servicoIdx, status]
@@ -85,7 +73,7 @@ const agendamentosPlan = [
   [8, '2026-09-04 13:30', '13:30', 'Fórum', 3, 12, 'Feito'],
   [10, '2026-09-05 08:30', '08:30', 'Sede', 7, 2, 'Feito'],
   [11, '2026-09-08 11:30', '11:30', 'Sede', 8, 8, 'Feito'],
-  [12, '2026-09-09 14:30', '14:30', 'Fórum', 9, 6, 'Feito'],
+  [12, '2026-09-09 14:30', '14:30', 'Fórum', 9, 6, 'Feito']
 ];
 
 function run(sql, params) {
@@ -98,12 +86,12 @@ function run(sql, params) {
 }
 
 async function main() {
-  console.log('🌱 Populando banco:', dbPath);
+  console.log('🌱 Populando:', dbPath);
 
   await run('CREATE TABLE IF NOT EXISTS clientes (id INTEGER PRIMARY KEY AUTOINCREMENT, nome TEXT NOT NULL, cpf TEXT NOT NULL, telefone TEXT NOT NULL, endereco TEXT, email TEXT, data_nascimento TEXT)');
   await run('CREATE TABLE IF NOT EXISTS servicos (id INTEGER PRIMARY KEY AUTOINCREMENT, descricao TEXT NOT NULL, preco REAL NOT NULL, tempo_estimado INTEGER NOT NULL)');
   await run('CREATE TABLE IF NOT EXISTS profissionais (id INTEGER PRIMARY KEY AUTOINCREMENT, nome TEXT NOT NULL, cpf TEXT, telefone_profissional TEXT, telefone_pessoal TEXT, endereco TEXT, especializacao TEXT, email TEXT)');
-  await run('CREATE TABLE IF NOT EXISTS agendamentos (id INTEGER PRIMARY KEY AUTOINCREMENT, data TEXT NOT NULL, horario TEXT, local TEXT, cliente_id INTEGER NOT NULL, responsavel TEXT NOT NULL, total REAL NOT NULL, tempo_total INTEGER NOT NULL, status TEXT DEFAULT \'Pendente\')');
+  await run("CREATE TABLE IF NOT EXISTS agendamentos (id INTEGER PRIMARY KEY AUTOINCREMENT, data TEXT NOT NULL, horario TEXT, local TEXT, cliente_id INTEGER NOT NULL, responsavel TEXT NOT NULL, total REAL NOT NULL, tempo_total INTEGER NOT NULL, status TEXT DEFAULT 'Pendente')");
   await run('CREATE TABLE IF NOT EXISTS itens_agendamento (id INTEGER PRIMARY KEY AUTOINCREMENT, agendamento_id INTEGER NOT NULL, servico_id INTEGER NOT NULL, preco_cobrado REAL NOT NULL)');
 
   await run('DELETE FROM itens_agendamento');
@@ -149,7 +137,7 @@ async function main() {
     );
   }
   console.log('✅', agendamentosPlan.length, 'agendamentos');
-  console.log('🌱 Seed concluído. Agora rode: npm start');
+  console.log('🌱 Seed concluído. Rode: npm start');
   db.close();
 }
 
