@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="estilo.css?v=9">
+<title>Advocacia Integrada - Novo Agendamento</title>
+<style>
+.form-linha{display:grid;grid-template-columns:1fr;gap:0 16px}
+@media(min-width:640px){.form-linha{grid-template-columns:1fr 1fr}}
+.tabela-scroll{overflow-x:auto}.nav-privado a{font-size:.9rem}
+.totais{text-align:right;margin-top:16px}
+</style>
+</head>
+<body>
+    <nav class="nav-privado">
+        <a href="painel.html">Geral</a>
+        <a href="clientes.html">Clientes</a>
+        <a href="servicos.html">Serviços</a>
+        <a href="novo_agendamento.html" style="border-bottom: 2px solid var(--gold-accent);">Novo Agendamento</a>
+        <a href="agendamentos.html">Agendamentos</a>
+        <a href="historico.html">Histórico</a>
+        <a href="index.html" class="nav-login" style="color: #ea580c !important;" title="Sair">Sair</a>
+    </nav>
+<header class="banner"><h1>Novo Agendamento e Alocação</h1><p>Vincule atos, estabeleça prazos e selecione o profissional responsável</p></header>
+<div class="container">
+<div class="card">
+<h2>Ordem de serviço jurídica</h2>
+<div class="form-linha">
+<div><label for="selCliente">Cliente</label><select id="selCliente"><option value="">Selecione...</option></select></div>
+<div><label for="selProfissional">Profissional responsável</label><select id="selProfissional"><option value="">Selecione...</option></select></div>
+</div>
+<div class="form-linha">
+<div><label for="txtData">Data</label><input type="date" id="txtData"></div>
+<div><label for="txtHorario">Horário</label><input type="time" id="txtHorario"></div>
+</div>
+<label for="txtLocal">Local</label><input type="text" id="txtLocal" placeholder="Ex: Sede / Fórum">
+<hr style="margin:22px 0;border:0;border-top:1px solid #E5E7EB">
+<h3 style="text-align:center;margin-top:0">Adicionar ato / serviço ao agendamento</h3>
+<label for="selServico">Selecionar ato do catálogo</label>
+<select id="selServico" onchange="adicionarCarrinho()"><option value="">Selecione...</option></select>
+</div>
+<div class="card">
+<h2>Escopo do atendimento marcado</h2>
+<div class="tabela-scroll"><table><thead><tr><th>Serviço</th><th>Tempo est.</th><th>Honorários</th><th>Local</th></tr></thead>
+<tbody id="lista-carrinho"></tbody></table></div>
+<div class="totais"><h3 id="txtTotal">Total geral: R$ 0,00</h3>
+<h4 id="txtTempo" style="color:var(--gold-accent)">Tempo total reservado: 0h</h4></div>
+<button type="button" onclick="finalizar()" style="margin-top:16px">Confirmar e Registrar Agendamento</button>
+</div>
+</div>
+<footer class="rodape"><p>&copy; 2026 Advocacia Integrada - Módulo Privado</p></footer>
+<script>
+let listaServicosDb=[],carrinho=[],totalGeral=0,tempoTotal=0;
+function carregar(){
+fetch('/listar-clientes').then(r=>r.json()).then(d=>{const s=document.getElementById('selCliente');d.forEach(c=>s.innerHTML+='<option value="'+c.id+'">'+c.nome+'</option>');}).catch(()=>{});
+fetch('/listar-profissionais').then(r=>r.json()).then(d=>{const s=document.getElementById('selProfissional');d.forEach(p=>s.innerHTML+='<option value="'+p.nome+'">'+p.nome+'</option>');}).catch(()=>{});
+fetch('/listar-servicos').then(r=>r.json()).then(d=>{listaServicosDb=d;const s=document.getElementById('selServico');d.forEach(x=>s.innerHTML+='<option value="'+x.id+'">'+x.descricao+' (R$ '+parseFloat(x.preco).toFixed(2)+')</option>');}).catch(()=>{});
+}
+function adicionarCarrinho(){const id=document.getElementById('selServico').value;if(!id)return;const s=listaServicosDb.find(x=>x.id==id);if(s){carrinho.push(s);atualizar();}document.getElementById('selServico').value='';}
+function atualizar(){const corpo=document.getElementById('lista-carrinho');const local=document.getElementById('txtLocal').value||'—';corpo.innerHTML='';totalGeral=0;tempoTotal=0;carrinho.forEach(s=>{totalGeral+=parseFloat(s.preco);tempoTotal+=parseInt(s.tempo_estimado);corpo.innerHTML+='<tr><td>'+s.descricao+'</td><td>'+(s.tempo_estimado/60).toFixed(1).replace('.0','')+'h</td><td>R$ '+parseFloat(s.preco).toFixed(2)+'</td><td>'+local+'</td></tr>';});document.getElementById('txtTotal').innerText='Total geral: R$ '+totalGeral.toFixed(2);document.getElementById('txtTempo').innerText='Tempo total reservado: '+(tempoTotal/60).toFixed(1).replace('.0','')+'h';}
+function finalizar(){const cliente_id=document.getElementById('selCliente').value;const responsavel=document.getElementById('selProfissional').value;const data=document.getElementById('txtData').value;const horario=document.getElementById('txtHorario').value;const local=document.getElementById('txtLocal').value;if(!cliente_id||!responsavel||!data||!carrinho.length){alert('Preencha cliente, profissional, data e adicione um serviço.');return;}fetch('/finalizar-agendamento',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({cliente_id,data,horario,local,responsavel,total:totalGeral,tempo_total:tempoTotal,servicos:carrinho})}).then(r=>r.json()).then(res=>{if(res.success){alert('Agendamento registrado!');location.href='agendamentos.html';}else alert('Erro ao salvar.');}).catch(()=>alert('Servidor local necessário.'));}
+carregar();
+</script>
+</body>
+</html>
