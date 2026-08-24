@@ -277,7 +277,7 @@ tbody tr:nth-of-type(even) {
     color: var(--gold-accent);
 }
 
-/* —— Áreas de Atuação: profissionais (layout horizontal) —— */
+/* —— Áreas de Atuação: profissionais —— */
 
 .area-desc {
     text-align: center;
@@ -325,17 +325,40 @@ tbody tr:nth-of-type(even) {
     text-align: left;
 }
 
-.prof-foto {
+/* Avatar circular: foto opcional ou silhueta sem foto */
+.prof-foto,
+.prof-avatar {
     width: 52px;
     height: 52px;
     min-width: 52px;
     border-radius: 50%;
-    object-fit: cover;
-    border: 2px solid var(--gold-accent);
-    display: block;
-    background: #eee;
-    margin-bottom: 0;
     flex-shrink: 0;
+    border: 2px solid var(--gold-accent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #e8e4de;
+    color: #8a8278;
+    overflow: hidden;
+}
+
+.prof-foto {
+    object-fit: cover;
+    display: block;
+    margin-bottom: 0;
+    background: #eee;
+}
+
+.prof-avatar {
+    font-size: 1.55rem;
+    line-height: 1;
+    user-select: none;
+}
+
+.prof-avatar svg {
+    width: 28px;
+    height: 28px;
+    fill: #9a9188;
 }
 
 .prof-info {

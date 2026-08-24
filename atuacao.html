@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="estilo.css?v=13">
+    <link rel="stylesheet" href="estilo.css?v=14">
     <title>Advocacia Integrada - Áreas de Atuação</title>
 </head>
 <body>
@@ -65,24 +65,18 @@
 
     <script>
     (function () {
-        var fotos = [
-            'https://randomuser.me/api/portraits/women/44.jpg',
-            'https://randomuser.me/api/portraits/men/32.jpg',
-            'https://randomuser.me/api/portraits/women/65.jpg',
-            'https://randomuser.me/api/portraits/men/52.jpg',
-            'https://randomuser.me/api/portraits/women/33.jpg',
-            'https://randomuser.me/api/portraits/men/75.jpg',
-            'https://randomuser.me/api/portraits/women/68.jpg',
-            'https://randomuser.me/api/portraits/men/46.jpg',
-            'https://randomuser.me/api/portraits/women/21.jpg'
-        ];
+        /* Silhueta neutra — perfil sem foto (foto pode ser adicionada depois) */
+        var avatarVazio =
+            '<div class="prof-avatar" title="Foto não cadastrada" aria-hidden="true">' +
+            '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">' +
+            '<path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v1.2h19.2v-1.2c0-3.2-6.4-4.8-9.6-4.8z"/>' +
+            '</svg></div>';
 
-        function card(p, i) {
-            var foto = fotos[i % fotos.length];
+        function card(p) {
             var tel = p.telefone_profissional || '—';
             var email = p.email || '—';
             return '<div class="card-prof">' +
-                '<img class="prof-foto" src="' + foto + '" alt="' + (p.nome || '') + '">' +
+                avatarVazio +
                 '<div class="prof-info">' +
                 '<strong>' + (p.nome || '') + '</strong>' +
                 (p.especializacao ? '<span>' + p.especializacao + '</span>' : '') +
