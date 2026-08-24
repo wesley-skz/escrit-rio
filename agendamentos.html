@@ -1,136 +1,169 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="estilo.css?v=9">
-    <title>Advocacia Integrada - Agendamentos</title>
-    <style>
-        .badge {
-            display: inline-block; padding: 4px 10px; border-radius: 4px;
-            font-size: 0.75rem; font-weight: 600; text-transform: uppercase;
-            background: #fff8f0; color: #92400e; border: 1px solid #f59e0b;
-        }
-        .btn-acao {
-            background: var(--primary-dark); color: var(--gold-accent);
-            border: 1px solid var(--gold-accent); padding: 6px 12px;
-            font-size: 0.75rem; font-weight: 600; border-radius: 4px;
-            cursor: pointer; width: auto; text-transform: uppercase; margin: 2px;
-        }
-        .btn-acao:hover { background: var(--gold-accent); color: var(--primary-dark); }
-        .tabela-scroll { overflow-x: auto; }
-        .nav-privado a { font-size: 0.9rem; }
-        .modal-fundo { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.45);
-            z-index: 100; align-items: center; justify-content: center; padding: 16px; }
-        .modal-fundo.aberto { display: flex; }
-        .modal-box { background: #fff; border-radius: 6px; border-top: 3px solid var(--gold-accent);
-            padding: 24px; max-width: 480px; width: 100%; max-height: 80vh; overflow: auto; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="estilo.css?v=12">
+<title>Advocacia Integrada - Agendamentos</title>
+<style>
+.badge{display:inline-block;padding:4px 10px;border-radius:4px;font-size:0.75rem;font-weight:600;text-transform:uppercase;background:#fff8f0;color:#92400e;border:1px solid #f59e0b}
+.btn-acao{background:var(--primary-dark);color:var(--gold-accent);border:1px solid var(--gold-accent);padding:6px 12px;font-size:0.75rem;font-weight:600;border-radius:4px;cursor:pointer;width:auto;text-transform:uppercase;margin:2px}
+.btn-acao:hover{background:var(--gold-accent);color:var(--primary-dark)}
+.btn-perigo{background:#7f1d1d;color:#fecaca;border:1px solid #f87171}
+.btn-perigo:hover{background:#f87171;color:#7f1d1d}
+.tabela-scroll{overflow-x:auto}.nav-privado a{font-size:0.9rem}
+.modal-fundo{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:100;align-items:center;justify-content:center;padding:16px}
+.modal-fundo.aberto{display:flex}
+.modal-box{background:#fff;border-radius:6px;border-top:3px solid var(--gold-accent);padding:24px;max-width:480px;width:100%;max-height:80vh;overflow:auto}
+.modal-acoes{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
+.aviso-excluir{background:#fff5f5;border:1px solid #fca5a5;border-radius:6px;padding:12px;margin-top:12px;font-size:.9rem;color:#7f1d1d}
+</style>
 </head>
 <body>
-    <nav class="nav-privado">
-        <a href="painel.html">Geral</a>
-        <a href="clientes.html">Clientes</a>
-        <a href="servicos.html">Serviços</a>
-        <a href="novo_agendamento.html">Novo Agendamento</a>
-        <a href="agendamentos.html" style="border-bottom: 2px solid var(--gold-accent);">Agendamentos</a>
-        <a href="historico.html">Histórico</a>
-        <a href="index.html" class="nav-login" style="color: #ea580c !important;" title="Sair">Sair</a>
-    </nav>
+<nav class="nav-privado">
+  <a href="painel.html">Geral</a>
+  <a href="clientes.html">Clientes</a>
+  <a href="servicos.html">Serviços</a>
+  <a href="novo_agendamento.html">Novo Agendamento</a>
+  <a href="agendamentos.html" style="border-bottom: 2px solid var(--gold-accent);">Agendamentos</a>
+  <a href="historico.html">Histórico</a>
+  <a href="index.html" class="nav-login" style="color: #ea580c !important;" title="Sair">Sair</a>
+</nav>
+<header class="banner"><h1>Agendamentos</h1><p>Pendências e compromissos ainda a realizar</p></header>
+<div class="container">
+<div class="card">
+<h2>Pendentes</h2>
+<p style="text-align:center;color:var(--text-muted);font-size:0.9rem;margin-top:-8px;">Lista do que ainda precisa ser cumprido pela equipe.</p>
+<div class="tabela-scroll">
+<table>
+<thead><tr><th>ID</th><th>Data / Hora</th><th>Cliente</th><th>Responsável</th><th>Local</th><th>Total</th><th>Status</th><th></th></tr></thead>
+<tbody id="lista-pendentes"><tr><td colspan="8" style="text-align:center;color:#666;">Carregando...</td></tr></tbody>
+</table>
+</div>
+</div>
+</div>
 
-    <header class="banner">
-        <h1>Agendamentos</h1>
-        <p>Pendências e compromissos ainda a realizar</p>
-    </header>
-
-    <div class="container">
-        <div class="card">
-            <h2>Pendentes</h2>
-            <p style="text-align:center;color:var(--text-muted);font-size:0.9rem;margin-top:-8px;">
-                Lista do que ainda precisa ser cumprido pela equipe.
-            </p>
-            <div class="tabela-scroll">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>ID</th><th>Data / Hora</th><th>Cliente</th>
-                            <th>Responsável</th><th>Local</th><th>Total</th><th>Status</th><th></th>
-                        </tr>
-                    </thead>
-                    <tbody id="lista-pendentes">
-                        <tr><td colspan="8" style="text-align:center;color:#666;">Carregando...</td></tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
+<div class="modal-fundo" id="modal" onclick="if(event.target.id==='modal')fechar()">
+  <div class="modal-box">
+    <h2 style="text-align:center;margin-top:0;">Detalhes do agendamento</h2>
+    <div id="modal-info"></div>
+    <div id="modal-edit" style="display:none">
+      <label>Data (AAAA-MM-DD)</label><input type="text" id="ae-data" placeholder="2026-09-01">
+      <label>Horário</label><input type="text" id="ae-hora" placeholder="09:00">
+      <label>Local</label><input type="text" id="ae-local">
+      <label>Responsável</label><input type="text" id="ae-resp">
     </div>
-
-    <div class="modal-fundo" id="modal" onclick="if(event.target.id==='modal')this.classList.remove('aberto')">
-        <div class="modal-box">
-            <h2 style="text-align:center;margin-top:0;">Detalhes do agendamento</h2>
-            <div id="modal-info"></div>
-            <table style="margin-top:12px;">
-                <thead><tr><th>Serviço</th><th>Tempo</th><th>Honorário</th></tr></thead>
-                <tbody id="modal-itens"></tbody>
-            </table>
-            <button type="button" style="margin-top:16px;" onclick="document.getElementById('modal').classList.remove('aberto')">Fechar</button>
-        </div>
+    <table style="margin-top:12px;" id="tabela-itens">
+      <thead><tr><th>Serviço</th><th>Tempo</th><th>Honorário</th></tr></thead>
+      <tbody id="modal-itens"></tbody>
+    </table>
+    <div id="a-excluir" style="display:none" class="aviso-excluir"><p id="a-excluir-txt"></p></div>
+    <div class="modal-acoes" id="a-acoes">
+      <button type="button" class="btn-acao" onclick="editarA()">Editar</button>
+      <button type="button" class="btn-acao" onclick="concluirA()">Concluir</button>
+      <button type="button" class="btn-acao btn-perigo" onclick="excluirA1()">Excluir</button>
+      <button type="button" class="btn-acao" onclick="fechar()">Fechar</button>
     </div>
+    <div class="modal-acoes" id="a-acoes-edit" style="display:none">
+      <button type="button" class="btn-acao" onclick="salvarA()">Salvar</button>
+      <button type="button" class="btn-acao" onclick="cancelarEditA()">Cancelar</button>
+    </div>
+    <div class="modal-acoes" id="a-acoes-del" style="display:none">
+      <button type="button" class="btn-acao btn-perigo" id="a-btn-del" onclick="excluirA2()">Confirmar</button>
+      <button type="button" class="btn-acao" onclick="cancelarDelA()">Cancelar</button>
+    </div>
+  </div>
+</div>
 
-    <footer class="rodape"><p>&copy; 2026 Advocacia Integrada - Módulo Privado</p></footer>
-    <script>
-        function carregar() {
-            fetch('/listar-agendamentos?status=Pendente').then(r => r.ok ? r.json() : []).then(lista => {
-                const corpo = document.getElementById('lista-pendentes');
-                if (!lista.length) {
-                    corpo.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#666;">Nenhum agendamento pendente.</td></tr>';
-                    return;
-                }
-                corpo.innerHTML = lista.map(a =>
-                    '<tr>'+
-                    '<td>'+a.id+'</td>'+
-                    '<td>'+a.data+(a.horario ? ' '+a.horario : '')+'</td>'+
-                    '<td><strong>'+a.nome_cliente+'</strong></td>'+
-                    '<td>'+a.responsavel+'</td>'+
-                    '<td>'+(a.local||'—')+'</td>'+
-                    '<td>R$ '+parseFloat(a.total).toFixed(2)+'</td>'+
-                    '<td><span class="badge">Pendente</span></td>'+
-                    '<td>'+
-                    '<button type="button" class="btn-acao" onclick="ver('+a.id+')">Ver</button>'+
-                    '<button type="button" class="btn-acao" onclick="concluir('+a.id+')">Concluir</button>'+
-                    '</td></tr>'
-                ).join('');
-            }).catch(() => {
-                document.getElementById('lista-pendentes').innerHTML =
-                    '<tr><td colspan="8" style="text-align:center;color:#666;">Servidor local necessário.</td></tr>';
-            });
-        }
-        function ver(id) {
-            fetch('/listar-agendamentos?status=all').then(r => r.json()).then(lista => {
-                const a = lista.find(x => x.id == id);
-                if (!a) return;
-                document.getElementById('modal-info').innerHTML =
-                    '<p><strong>Cliente:</strong> '+a.nome_cliente+'</p>'+
-                    '<p><strong>Responsável:</strong> '+a.responsavel+'</p>'+
-                    '<p><strong>Data:</strong> '+a.data+'</p>'+
-                    '<p><strong>Local:</strong> '+(a.local||'—')+'</p>'+
-                    '<p><strong>Total:</strong> R$ '+parseFloat(a.total).toFixed(2)+'</p>';
-            });
-            fetch('/detalhes-agendamento/'+id).then(r => r.json()).then(itens => {
-                document.getElementById('modal-itens').innerHTML = itens.map(i =>
-                    '<tr><td>'+i.descricao+'</td><td>'+i.tempo_estimado+' min</td><td>R$ '+parseFloat(i.preco_cobrado).toFixed(2)+'</td></tr>'
-                ).join('') || '<tr><td colspan="3">Sem itens</td></tr>';
-                document.getElementById('modal').classList.add('aberto');
-            });
-        }
-        function concluir(id) {
-            if (!confirm('Marcar este agendamento como concluído (Feito)?')) return;
-            fetch('/concluir-agendamento', {
-                method: 'POST', headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ id })
-            }).then(r => r.json()).then(() => carregar());
-        }
-        carregar();
-    </script>
+<footer class="rodape"><p>&copy; 2026 Advocacia Integrada - Módulo Privado</p></footer>
+<script>
+var agAtual=null, faseA=0;
+
+function carregar() {
+  fetch('/listar-agendamentos?status=Pendente').then(function(r){return r.ok?r.json():[];}).then(function(lista){
+    var corpo=document.getElementById('lista-pendentes');
+    if(!lista.length){corpo.innerHTML='<tr><td colspan="8" style="text-align:center;color:#666;">Nenhum agendamento pendente.</td></tr>';return;}
+    corpo.innerHTML=lista.map(function(a){
+      return '<tr><td>'+a.id+'</td><td>'+a.data+(a.horario?' '+a.horario:'')+'</td><td><strong>'+a.nome_cliente+'</strong></td><td>'+a.responsavel+'</td><td>'+(a.local||'—')+'</td><td>R$ '+parseFloat(a.total).toFixed(2)+'</td><td><span class="badge">Pendente</span></td><td><button type="button" class="btn-acao" onclick="ver('+a.id+')">Ver detalhes</button></td></tr>';
+    }).join('');
+  }).catch(function(){
+    document.getElementById('lista-pendentes').innerHTML='<tr><td colspan="8" style="text-align:center;color:#666;">Servidor local necessário.</td></tr>';
+  });
+}
+
+function ver(id){
+  faseA=0;
+  fetch('/listar-agendamentos?status=all').then(function(r){return r.json();}).then(function(lista){
+    agAtual=lista.find(function(x){return x.id==id;});
+    if(!agAtual)return;
+    document.getElementById('modal-info').innerHTML=
+      '<p><strong>Cliente:</strong> '+agAtual.nome_cliente+'</p>'+
+      '<p><strong>Responsável:</strong> '+agAtual.responsavel+'</p>'+
+      '<p><strong>Data:</strong> '+agAtual.data+'</p>'+
+      '<p><strong>Horário:</strong> '+(agAtual.horario||'—')+'</p>'+
+      '<p><strong>Local:</strong> '+(agAtual.local||'—')+'</p>'+
+      '<p><strong>Total:</strong> R$ '+parseFloat(agAtual.total).toFixed(2)+'</p>';
+    document.getElementById('modal-info').style.display='block';
+    document.getElementById('modal-edit').style.display='none';
+    document.getElementById('a-excluir').style.display='none';
+    document.getElementById('tabela-itens').style.display='table';
+    document.getElementById('a-acoes').style.display='flex';
+    document.getElementById('a-acoes-edit').style.display='none';
+    document.getElementById('a-acoes-del').style.display='none';
+  });
+  fetch('/detalhes-agendamento/'+id).then(function(r){return r.json();}).then(function(itens){
+    document.getElementById('modal-itens').innerHTML=itens.map(function(i){
+      return '<tr><td>'+i.descricao+'</td><td>'+i.tempo_estimado+' min</td><td>R$ '+parseFloat(i.preco_cobrado).toFixed(2)+'</td></tr>';
+    }).join('')||'<tr><td colspan="3">Sem itens</td></tr>';
+    document.getElementById('modal').classList.add('aberto');
+  });
+}
+
+function editarA(){
+  document.getElementById('modal-info').style.display='none';
+  document.getElementById('modal-edit').style.display='block';
+  document.getElementById('a-excluir').style.display='none';
+  document.getElementById('a-acoes').style.display='none';
+  document.getElementById('a-acoes-edit').style.display='flex';
+  var d=(agAtual.data||'').split(' ')[0];
+  document.getElementById('ae-data').value=d;
+  document.getElementById('ae-hora').value=agAtual.horario||'';
+  document.getElementById('ae-local').value=agAtual.local||'';
+  document.getElementById('ae-resp').value=agAtual.responsavel||'';
+}
+function cancelarEditA(){ver(agAtual.id);}
+function salvarA(){
+  var body={id:agAtual.id,data:document.getElementById('ae-data').value.trim(),horario:document.getElementById('ae-hora').value.trim(),local:document.getElementById('ae-local').value.trim(),responsavel:document.getElementById('ae-resp').value.trim()};
+  fetch('/atualizar-agendamento',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}).then(function(r){return r.json();}).then(function(res){
+    if(!res.success)return alert('Falha ao salvar.');
+    carregar(); ver(agAtual.id);
+  });
+}
+function concluirA(){
+  if(!confirm('Marcar este agendamento como concluído (Feito)?'))return;
+  fetch('/concluir-agendamento',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:agAtual.id})}).then(function(r){return r.json();}).then(function(){fechar();carregar();});
+}
+function excluirA1(){
+  faseA=1;
+  document.getElementById('a-excluir').style.display='block';
+  document.getElementById('a-excluir-txt').textContent='Fase 1 de 2: deseja excluir o agendamento #'+agAtual.id+'?';
+  document.getElementById('a-acoes').style.display='none';
+  document.getElementById('a-acoes-del').style.display='flex';
+  document.getElementById('a-btn-del').textContent='Sim, continuar (fase 1)';
+}
+function excluirA2(){
+  if(faseA===1){
+    faseA=2;
+    document.getElementById('a-excluir-txt').textContent='Fase 2 de 2: exclusão definitiva do agendamento.';
+    document.getElementById('a-btn-del').textContent='Excluir definitivamente';
+    return;
+  }
+  fetch('/excluir-agendamento',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:agAtual.id})}).then(function(){fechar();carregar();});
+}
+function cancelarDelA(){ver(agAtual.id);}
+function fechar(){document.getElementById('modal').classList.remove('aberto');faseA=0;}
+
+carregar();
+</script>
 </body>
 </html>

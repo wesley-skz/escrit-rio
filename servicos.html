@@ -3,26 +3,33 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="stylesheet" href="estilo.css?v=9">
+<link rel="stylesheet" href="estilo.css?v=12">
 <title>Advocacia Integrada - Serviços</title>
 <style>
 .form-linha{display:grid;grid-template-columns:1fr;gap:0 16px}
 @media(min-width:640px){.form-linha{grid-template-columns:1fr 1fr}}
 .btn-acao{background:var(--primary-dark);color:var(--gold-accent);border:1px solid var(--gold-accent);padding:5px 10px;font-size:.72rem;font-weight:600;border-radius:4px;cursor:pointer;width:auto;margin:2px;text-transform:uppercase}
 .btn-acao:hover{background:var(--gold-accent);color:var(--primary-dark)}
+.btn-perigo{background:#7f1d1d;color:#fecaca;border:1px solid #f87171}
+.btn-perigo:hover{background:#f87171;color:#7f1d1d}
 .tabela-scroll{overflow-x:auto}.nav-privado a{font-size:.9rem}
+.modal-fundo{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:100;align-items:center;justify-content:center;padding:16px}
+.modal-fundo.aberto{display:flex}
+.modal-box{background:#fff;border-radius:6px;border-top:3px solid var(--gold-accent);padding:24px;max-width:480px;width:100%;max-height:90vh;overflow:auto}
+.modal-acoes{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
+.aviso-excluir{background:#fff5f5;border:1px solid #fca5a5;border-radius:6px;padding:12px;margin-top:12px;font-size:.9rem;color:#7f1d1d}
 </style>
 </head>
 <body>
-    <nav class="nav-privado">
-        <a href="painel.html">Geral</a>
-        <a href="clientes.html">Clientes</a>
-        <a href="servicos.html" style="border-bottom: 2px solid var(--gold-accent);">Serviços</a>
-        <a href="novo_agendamento.html">Novo Agendamento</a>
-        <a href="agendamentos.html">Agendamentos</a>
-        <a href="historico.html">Histórico</a>
-        <a href="index.html" class="nav-login" style="color: #ea580c !important;" title="Sair">Sair</a>
-    </nav>
+<nav class="nav-privado">
+  <a href="painel.html">Geral</a>
+  <a href="clientes.html">Clientes</a>
+  <a href="servicos.html" style="border-bottom: 2px solid var(--gold-accent);">Serviços</a>
+  <a href="novo_agendamento.html">Novo Agendamento</a>
+  <a href="agendamentos.html">Agendamentos</a>
+  <a href="historico.html">Histórico</a>
+  <a href="index.html" class="nav-login" style="color: #ea580c !important;" title="Sair">Sair</a>
+</nav>
 <header class="banner"><h1>Catálogo de Serviços e Honorários</h1><p>Configure a tabela base de precificação administrativa e judicial</p></header>
 <div class="container">
 <div class="card">
@@ -52,16 +59,190 @@
 <div style="margin-top:18px"><button type="submit">Cadastrar</button></div>
 </form>
 <h3 style="margin-top:28px;text-align:center">Profissionais cadastrados</h3>
-<div class="tabela-scroll"><table><thead><tr><th>Nome</th><th>Especialização</th><th>Telefone</th><th>E-mail</th></tr></thead>
+<div class="tabela-scroll"><table><thead><tr><th>Nome</th><th>Especialização</th><th>Telefone</th><th></th></tr></thead>
 <tbody id="lista-profissionais"></tbody></table></div>
 </div>
 </div>
+
+<!-- Modal serviço -->
+<div class="modal-fundo" id="modal-servico" onclick="if(event.target.id==='modal-servico')fecharS()">
+  <div class="modal-box">
+    <h3 style="text-align:center;margin-top:0">Detalhes do serviço</h3>
+    <div id="s-view"></div>
+    <div id="s-edit" style="display:none">
+      <label>Descrição</label><input type="text" id="se-desc">
+      <label>Honorário (R$)</label><input type="number" step="0.01" id="se-preco">
+      <label>Prazo (minutos)</label><input type="number" id="se-tempo">
+    </div>
+    <div id="s-excluir" style="display:none" class="aviso-excluir"><p id="s-excluir-txt"></p></div>
+    <div class="modal-acoes" id="s-acoes"><button type="button" class="btn-acao" onclick="editarS()">Editar</button><button type="button" class="btn-acao btn-perigo" onclick="excluirS1()">Excluir</button><button type="button" class="btn-acao" onclick="fecharS()">Fechar</button></div>
+    <div class="modal-acoes" id="s-acoes-edit" style="display:none"><button type="button" class="btn-acao" onclick="salvarS()">Salvar</button><button type="button" class="btn-acao" onclick="mostrarS()">Cancelar</button></div>
+    <div class="modal-acoes" id="s-acoes-del" style="display:none"><button type="button" class="btn-acao btn-perigo" id="s-btn-del" onclick="excluirS2()">Confirmar</button><button type="button" class="btn-acao" onclick="mostrarS()">Cancelar</button></div>
+  </div>
+</div>
+
+<!-- Modal profissional -->
+<div class="modal-fundo" id="modal-prof" onclick="if(event.target.id==='modal-prof')fecharP()">
+  <div class="modal-box">
+    <h3 style="text-align:center;margin-top:0">Detalhes do profissional</h3>
+    <div id="p-view"></div>
+    <div id="p-edit" style="display:none">
+      <label>Nome</label><input type="text" id="pe-nome">
+      <label>Especialização</label><input type="text" id="pe-esp">
+      <label>CPF</label><input type="text" id="pe-cpf">
+      <label>E-mail</label><input type="text" id="pe-email">
+      <label>Tel. profissional</label><input type="text" id="pe-telp">
+      <label>Tel. pessoal</label><input type="text" id="pe-tels">
+      <label>Endereço</label><input type="text" id="pe-end">
+    </div>
+    <div id="p-excluir" style="display:none" class="aviso-excluir"><p id="p-excluir-txt"></p></div>
+    <div class="modal-acoes" id="p-acoes"><button type="button" class="btn-acao" onclick="editarP()">Editar</button><button type="button" class="btn-acao btn-perigo" onclick="excluirP1()">Excluir</button><button type="button" class="btn-acao" onclick="fecharP()">Fechar</button></div>
+    <div class="modal-acoes" id="p-acoes-edit" style="display:none"><button type="button" class="btn-acao" onclick="salvarP()">Salvar</button><button type="button" class="btn-acao" onclick="mostrarP()">Cancelar</button></div>
+    <div class="modal-acoes" id="p-acoes-del" style="display:none"><button type="button" class="btn-acao btn-perigo" id="p-btn-del" onclick="excluirP2()">Confirmar</button><button type="button" class="btn-acao" onclick="mostrarP()">Cancelar</button></div>
+  </div>
+</div>
+
 <footer class="rodape"><p>&copy; 2026 Advocacia Integrada - Módulo Privado</p></footer>
 <script>
-function carregarServicos(){fetch('/listar-servicos').then(r=>r.ok?r.json():[]).then(lista=>{const c=document.getElementById('lista-servicos');if(!lista.length){c.innerHTML='<tr><td colspan="4" style="text-align:center;color:#666">Nenhum serviço.</td></tr>';return;}c.innerHTML=lista.map(s=>'<tr><td><strong>'+s.descricao+'</strong></td><td>R$ '+parseFloat(s.preco).toFixed(2)+'</td><td>'+(s.tempo_estimado/60).toFixed(1).replace('.0','')+'h</td><td><button type="button" class="btn-acao" onclick="editar('+s.id+')">Editar</button><button type="button" class="btn-acao" onclick="excluir('+s.id+')">Excluir</button></td></tr>').join('');}).catch(()=>{document.getElementById('lista-servicos').innerHTML='<tr><td colspan="4" style="text-align:center;color:#666">Servidor necessário.</td></tr>';});}
-function editar(id){fetch('/listar-servicos').then(r=>r.json()).then(lista=>{const s=lista.find(x=>x.id==id);if(!s)return;const d=prompt('Descrição:',s.descricao);if(d===null)return;const p=prompt('Honorário R$:',s.preco);if(p===null)return;const t=prompt('Minutos:',s.tempo_estimado);if(t===null)return;fetch('/atualizar-servico',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id,descricao:d,preco:p,tempo_estimado:t})}).then(()=>carregarServicos());});}
-function excluir(id){if(!confirm('Excluir serviço?'))return;fetch('/excluir-servico',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id})}).then(()=>carregarServicos());}
-function carregarProfissionais(){fetch('/listar-profissionais').then(r=>r.ok?r.json():[]).then(lista=>{const c=document.getElementById('lista-profissionais');if(!lista.length){c.innerHTML='<tr><td colspan="4" style="text-align:center;color:#666">Nenhum profissional.</td></tr>';return;}c.innerHTML=lista.map(p=>'<tr><td><strong>'+p.nome+'</strong></td><td>'+(p.especializacao||'—')+'</td><td>'+(p.telefone_profissional||p.telefone_pessoal||'—')+'</td><td>'+(p.email||'—')+'</td></tr>').join('');}).catch(()=>{});}
+var servAtual=null, faseS=0, profAtual=null, faseP=0;
+
+function carregarServicos(){
+  fetch('/listar-servicos').then(function(r){return r.ok?r.json():[];}).then(function(lista){
+    var c=document.getElementById('lista-servicos');
+    if(!lista.length){c.innerHTML='<tr><td colspan="4" style="text-align:center;color:#666">Nenhum serviço.</td></tr>';return;}
+    c.innerHTML=lista.map(function(s){
+      return '<tr><td><strong>'+s.descricao+'</strong></td><td>R$ '+parseFloat(s.preco).toFixed(2)+'</td><td>'+(s.tempo_estimado/60).toFixed(1).replace('.0','')+'h</td><td><button type="button" class="btn-acao" onclick="verS('+s.id+')">Ver detalhes</button></td></tr>';
+    }).join('');
+  }).catch(function(){document.getElementById('lista-servicos').innerHTML='<tr><td colspan="4" style="text-align:center;color:#666">Servidor necessário.</td></tr>';});
+}
+
+function verS(id){
+  faseS=0;
+  fetch('/servico/'+id).then(function(r){return r.json();}).then(function(s){
+    if(s.error)return alert(s.error);
+    servAtual=s; mostrarS();
+    document.getElementById('modal-servico').classList.add('aberto');
+  });
+}
+function mostrarS(){
+  var s=servAtual;
+  document.getElementById('s-view').style.display='block';
+  document.getElementById('s-edit').style.display='none';
+  document.getElementById('s-excluir').style.display='none';
+  document.getElementById('s-acoes').style.display='flex';
+  document.getElementById('s-acoes-edit').style.display='none';
+  document.getElementById('s-acoes-del').style.display='none';
+  document.getElementById('s-view').innerHTML='<p><strong>Descrição:</strong> '+s.descricao+'</p><p><strong>Honorário:</strong> R$ '+parseFloat(s.preco).toFixed(2)+'</p><p><strong>Prazo:</strong> '+s.tempo_estimado+' min</p>';
+}
+function editarS(){
+  document.getElementById('s-view').style.display='none';
+  document.getElementById('s-edit').style.display='block';
+  document.getElementById('s-excluir').style.display='none';
+  document.getElementById('s-acoes').style.display='none';
+  document.getElementById('s-acoes-edit').style.display='flex';
+  document.getElementById('s-acoes-del').style.display='none';
+  document.getElementById('se-desc').value=servAtual.descricao;
+  document.getElementById('se-preco').value=servAtual.preco;
+  document.getElementById('se-tempo').value=servAtual.tempo_estimado;
+}
+function salvarS(){
+  var body={id:servAtual.id,descricao:document.getElementById('se-desc').value.trim(),preco:document.getElementById('se-preco').value,tempo_estimado:document.getElementById('se-tempo').value};
+  if(!body.descricao)return alert('Informe a descrição.');
+  fetch('/atualizar-servico',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}).then(function(r){return r.json();}).then(function(res){
+    if(!res.success)return alert('Falha ao salvar.');
+    servAtual.descricao=body.descricao;servAtual.preco=body.preco;servAtual.tempo_estimado=body.tempo_estimado;
+    mostrarS();carregarServicos();
+  });
+}
+function excluirS1(){
+  faseS=1;
+  document.getElementById('s-excluir').style.display='block';
+  document.getElementById('s-excluir-txt').textContent='Fase 1 de 2: deseja excluir "'+servAtual.descricao+'"?';
+  document.getElementById('s-acoes').style.display='none';
+  document.getElementById('s-acoes-del').style.display='flex';
+  document.getElementById('s-btn-del').textContent='Sim, continuar (fase 1)';
+}
+function excluirS2(){
+  if(faseS===1){
+    faseS=2;
+    document.getElementById('s-excluir-txt').textContent='Fase 2 de 2: exclusão definitiva do serviço.';
+    document.getElementById('s-btn-del').textContent='Excluir definitivamente';
+    return;
+  }
+  fetch('/excluir-servico',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:servAtual.id})}).then(function(){fecharS();carregarServicos();});
+}
+function fecharS(){document.getElementById('modal-servico').classList.remove('aberto');faseS=0;}
+
+function carregarProfissionais(){
+  fetch('/listar-profissionais').then(function(r){return r.ok?r.json():[];}).then(function(lista){
+    var c=document.getElementById('lista-profissionais');
+    if(!lista.length){c.innerHTML='<tr><td colspan="4" style="text-align:center;color:#666">Nenhum profissional.</td></tr>';return;}
+    c.innerHTML=lista.map(function(p){
+      return '<tr><td><strong>'+p.nome+'</strong></td><td>'+(p.especializacao||'—')+'</td><td>'+(p.telefone_profissional||p.telefone_pessoal||'—')+'</td><td><button type="button" class="btn-acao" onclick="verP('+p.id+')">Ver detalhes</button></td></tr>';
+    }).join('');
+  }).catch(function(){});
+}
+
+function verP(id){
+  faseP=0;
+  fetch('/profissional/'+id).then(function(r){return r.json();}).then(function(p){
+    if(p.error)return alert(p.error);
+    profAtual=p; mostrarP();
+    document.getElementById('modal-prof').classList.add('aberto');
+  });
+}
+function mostrarP(){
+  var p=profAtual;
+  document.getElementById('p-view').style.display='block';
+  document.getElementById('p-edit').style.display='none';
+  document.getElementById('p-excluir').style.display='none';
+  document.getElementById('p-acoes').style.display='flex';
+  document.getElementById('p-acoes-edit').style.display='none';
+  document.getElementById('p-acoes-del').style.display='none';
+  document.getElementById('p-view').innerHTML='<p><strong>Nome:</strong> '+p.nome+'</p><p><strong>Especialização:</strong> '+(p.especializacao||'—')+'</p><p><strong>CPF:</strong> '+(p.cpf||'—')+'</p><p><strong>E-mail:</strong> '+(p.email||'—')+'</p><p><strong>Tel. profissional:</strong> '+(p.telefone_profissional||'—')+'</p><p><strong>Tel. pessoal:</strong> '+(p.telefone_pessoal||'—')+'</p><p><strong>Endereço:</strong> '+(p.endereco||'—')+'</p>';
+}
+function editarP(){
+  document.getElementById('p-view').style.display='none';
+  document.getElementById('p-edit').style.display='block';
+  document.getElementById('p-excluir').style.display='none';
+  document.getElementById('p-acoes').style.display='none';
+  document.getElementById('p-acoes-edit').style.display='flex';
+  document.getElementById('p-acoes-del').style.display='none';
+  document.getElementById('pe-nome').value=profAtual.nome||'';
+  document.getElementById('pe-esp').value=profAtual.especializacao||'';
+  document.getElementById('pe-cpf').value=profAtual.cpf||'';
+  document.getElementById('pe-email').value=profAtual.email||'';
+  document.getElementById('pe-telp').value=profAtual.telefone_profissional||'';
+  document.getElementById('pe-tels').value=profAtual.telefone_pessoal||'';
+  document.getElementById('pe-end').value=profAtual.endereco||'';
+}
+function salvarP(){
+  var body={id:profAtual.id,nome:document.getElementById('pe-nome').value.trim(),especializacao:document.getElementById('pe-esp').value.trim(),cpf:document.getElementById('pe-cpf').value.trim(),email:document.getElementById('pe-email').value.trim(),telefone_profissional:document.getElementById('pe-telp').value.trim(),telefone_pessoal:document.getElementById('pe-tels').value.trim(),endereco:document.getElementById('pe-end').value.trim()};
+  if(!body.nome)return alert('Nome obrigatório.');
+  fetch('/atualizar-profissional',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}).then(function(r){return r.json();}).then(function(res){
+    if(!res.success)return alert('Falha ao salvar.');
+    Object.assign(profAtual,body); mostrarP(); carregarProfissionais();
+  });
+}
+function excluirP1(){
+  faseP=1;
+  document.getElementById('p-excluir').style.display='block';
+  document.getElementById('p-excluir-txt').textContent='Fase 1 de 2: deseja excluir "'+profAtual.nome+'"?';
+  document.getElementById('p-acoes').style.display='none';
+  document.getElementById('p-acoes-del').style.display='flex';
+  document.getElementById('p-btn-del').textContent='Sim, continuar (fase 1)';
+}
+function excluirP2(){
+  if(faseP===1){
+    faseP=2;
+    document.getElementById('p-excluir-txt').textContent='Fase 2 de 2: exclusão definitiva do profissional.';
+    document.getElementById('p-btn-del').textContent='Excluir definitivamente';
+    return;
+  }
+  fetch('/excluir-profissional',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:profAtual.id})}).then(function(){fecharP();carregarProfissionais();});
+}
+function fecharP(){document.getElementById('modal-prof').classList.remove('aberto');faseP=0;}
+
 carregarServicos();carregarProfissionais();
 </script>
 </body>
