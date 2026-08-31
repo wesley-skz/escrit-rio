@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate">
-<link rel="stylesheet" href="estilo.css?v=15">
+<link rel="stylesheet" href="estilo.css?v=16">
 <title>Advocacia Integrada - Clientes</title>
 <style>
 .form-linha{display:grid;grid-template-columns:1fr;gap:0 16px}
@@ -45,7 +45,7 @@ input.campo-erro{border-color:#dc2626!important;background:#fef2f2}
 <h2>Novo Cadastro de Cliente</h2>
 <form action="/salvar-cliente" method="POST" id="form-cliente">
 <div class="form-linha"><div><label for="nome">Nome / Razão Social</label><input type="text" id="nome" name="nome" required></div>
-<div><label for="cpf">CPF / CNPJ</label><input type="text" id="cpf" name="cpf" required placeholder="000.000.000-00 ou 00.000.000/0000-00"></div></div>
+<div><label for="cpf">CPF / CNPJ</label><input type="text" id="cpf" name="cpf" required placeholder="Digite só os números" inputmode="numeric" maxlength="18"></div></div>
 <div class="form-linha"><div><label for="telefone">Telefone</label><input type="tel" id="telefone" name="telefone" required></div>
 <div><label for="email">E-mail</label><input type="text" id="email" name="email"></div></div>
 <label for="endereco">Endereço</label><input type="text" id="endereco" name="endereco">
@@ -69,7 +69,7 @@ input.campo-erro{border-color:#dc2626!important;background:#fef2f2}
     <div id="modal-view"></div>
     <div id="modal-edit" style="display:none">
       <label>Nome / Razão Social</label><input type="text" id="e-nome">
-      <label>CPF / CNPJ</label><input type="text" id="e-cpf">
+      <label>CPF / CNPJ</label><input type="text" id="e-cpf" inputmode="numeric" maxlength="18">
       <label>Telefone</label><input type="text" id="e-telefone">
       <label>E-mail</label><input type="text" id="e-email">
       <label>Endereço</label><input type="text" id="e-endereco">
@@ -108,9 +108,9 @@ Validacao.ligarData(document.getElementById('data_nascimento'));
 
 document.getElementById('form-cliente').addEventListener('submit', function(e) {
   var st = Validacao.cpfCnpjStatus(document.getElementById('cpf').value);
-  if (st.ok === false) {
+  if (st.ok !== true) {
     e.preventDefault();
-    alert('CPF/CNPJ: ' + st.msg);
+    alert(st.msg || 'Informe um CPF ou CNPJ válido.');
     return;
   }
   var dn = document.getElementById('data_nascimento').value;
@@ -207,7 +207,7 @@ function salvarEdicao() {
   };
   if (!body.nome || !body.cpf || !body.telefone) return alert('Nome, CPF/CNPJ e telefone são obrigatórios.');
   var st = Validacao.cpfCnpjStatus(body.cpf);
-  if (st.ok === false) return alert('CPF/CNPJ: ' + st.msg);
+  if (st.ok !== true) return alert(st.msg || 'Informe um CPF ou CNPJ válido.');
   if (body.data_nascimento) {
     var ds = Validacao.dataStatus(body.data_nascimento);
     if (ds.ok === false) return alert('Data: ' + ds.msg);
